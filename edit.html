@@ -207,7 +207,7 @@ function renderEditor(svc) {
     `<option value="${c.id}" ${(svc.categories||[])[0] === c.id ? 'selected' : ''}>${c.name}</option>`
   ).join('');
 
-  let plansHtml = svc.plans.map((plan, pi) => renderPlan(plan, pi)).join('');
+  let plansHtml = svc.plans.map((plan, pi) => renderPlan(plan, pi, svc.plans.length)).join('');
 
   editor.innerHTML = `
     <div class="action-bar">
@@ -242,7 +242,7 @@ function renderEditor(svc) {
   `;
 }
 
-function renderPlan(plan, pi) {
+function renderPlan(plan, pi, total) {
   const historyHtml = [...plan.price_history]
     .sort((a, b) => new Date(b.valid_from) - new Date(a.valid_from))
     .map((h, hi) => renderHistoryEntry(h, pi, hi))
@@ -253,6 +253,8 @@ function renderPlan(plan, pi) {
       <div class="form-card__head">
         プラン <span class="badge">${pi + 1}</span>
         <span style="flex:1"></span>
+        <button class="btn btn-ghost btn-sm" onclick="movePlan(${pi},-1)" ${pi===0?'disabled':''} title="上へ移動">↑</button>
+        <button class="btn btn-ghost btn-sm" onclick="movePlan(${pi},1)" ${pi===total-1?'disabled':''} title="下へ移動">↓</button>
         <button class="btn btn-danger btn-sm" onclick="deletePlan(${pi})" style="font-size:11px">削除</button>
       </div>
       <div class="form-card__body">
@@ -462,6 +464,16 @@ function downloadExport() {
   URL.revokeObjectURL(a.href);
   document.getElementById('saveDone').style.display = 'block';
   document.getElementById('copyDone').style.display = 'none';
+}
+
+// ===== プラン並べ替え =====
+function movePlan(pi, dir) {
+  saveService();
+  const svc = DB.services.find(s => s.id === currentServiceId);
+  const other = pi + dir;
+  if (other < 0 || other >= svc.plans.length) return;
+  [svc.plans[pi], svc.plans[other]] = [svc.plans[other], svc.plans[pi]];
+  renderEditor(svc);
 }
 
 // ===== index.htmlへ即反映 =====
