@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "mcp__Claude_in_Chrome__switch_browser",
+      "WebFetch(domain:www.watch.impress.co.jp)",
+      "WebFetch(domain:one.google.com)",
+      "WebFetch(domain:chatgpt.com)",
+      "WebFetch(domain:claude.com)",
+      "Bash(node -e ' *)",
+      "Bash(ls .claude/)",
+      "Bash(where python *)",
+      "Bash(where node *)",
+      "Bash(where npx *)",
+      "Bash(where python3 *)",
+      "PowerShell($PSVersionTable.PSVersion; Get-Command pwsh -ErrorAction SilentlyContinue; Get-Command python -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source; Get-Command node -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source)",
+      "mcp__Claude_Preview__preview_start",
+      "WebFetch(domain:openai.com)"
+    ]
+  }
+}

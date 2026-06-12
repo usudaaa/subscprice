@@ -1,0 +1,4 @@
+﻿"カテゴリ","サービスID","サービス名","提供元","公式URL","サービス概要","プランID","プラン名","プラン説明","適用開始","適用終了","金額","通貨","課金","税","出典","備考"
+"ストレージ","icloud-plus","iCloud+","Apple","https://www.apple.com/jp/icloud/","AppleのクラウドストレージサービスiCloudの有料プラン。プライベートリレー、メールを非公開等のプライバシー機能も利用できる。","icloud-50gb","50GB","","2023-01-01","","130","JPY","monthly","税込","https://www.apple.com/jp/icloud/",""
+"ストレージ","icloud-plus","iCloud+","Apple","https://www.apple.com/jp/icloud/","AppleのクラウドストレージサービスiCloudの有料プラン。プライベートリレー、メールを非公開等のプライバシー機能も利用できる。","icloud-200gb","200GB","ファミリー共有可能","2023-01-01","","400","JPY","monthly","税込","https://www.apple.com/jp/icloud/",""
+"ストレージ","icloud-plus","iCloud+","Apple","https://www.apple.com/jp/icloud/","AppleのクラウドストレージサービスiCloudの有料プラン。プライベートリレー、メールを非公開等のプライバシー機能も利用できる。","icloud-2tb","2TB","ファミリー共有可能","2023-01-01","","1300","JPY","monthly","税込","https://www.apple.com/jp/icloud/",""

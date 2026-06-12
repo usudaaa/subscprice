@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>サブスクリプション価格ウォッチ — Impress Watch</title>
+  <style>
+    /* ===== Impress Watch トンマナ（ブルー系） ===== */
+    :root {
+      --iw-navy:      #003399;
+      --iw-blue:      #0055cc;
+      --iw-blue-mid:  #1a5fb4;
+      --iw-blue-light:#e8f0fb;
+      --iw-dark:      #1a1a1a;
+      --iw-gray:      #555555;
+      --iw-light-gray:#f4f6f9;
+      --iw-border:    #d0d8e8;
+      --iw-link:      #0044bb;
+      --iw-link-hover:#cc2200;
+      --font-body:    "Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",Meiryo,sans-serif;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:var(--font-body);font-size:14px;line-height:1.7;color:var(--iw-dark);background:#fff}
+
+    /* ===== ヘッダー ===== */
+    .site-header{background:var(--iw-navy);border-bottom:3px solid #001f77}
+    .site-header__inner{max-width:980px;margin:0 auto;padding:0 12px;display:flex;align-items:center;height:48px;gap:16px}
+    .site-header__logo{color:#fff;font-size:19px;font-weight:bold;text-decoration:none;letter-spacing:-0.02em}
+    .site-header__logo span{font-size:11px;font-weight:normal;opacity:.8;margin-left:6px}
+    .site-header__breadcrumb{color:rgba(255,255,255,.75);font-size:12px}
+    .site-header__breadcrumb a{color:rgba(255,255,255,.85);text-decoration:none}
+    .site-header__breadcrumb a:hover{color:#fff}
+
+    /* ===== ページヘッダー ===== */
+    .page-header{background:var(--iw-blue-light);border-bottom:2px solid var(--iw-navy);padding:18px 0 14px}
+    .page-header__inner{max-width:980px;margin:0 auto;padding:0 12px}
+    .page-header__title{font-size:22px;font-weight:bold;color:var(--iw-navy);margin-bottom:6px;border-left:4px solid var(--iw-navy);padding-left:10px}
+    .page-header__lead{font-size:13px;color:var(--iw-gray);line-height:1.7;padding-left:14px}
+    .page-header__updated{font-size:11px;color:#888;margin-top:6px;padding-left:14px}
+
+    /* ===== メインレイアウト ===== */
+    .main-wrap{max-width:980px;margin:0 auto;padding:0 12px}
+
+    /* ===== カテゴリナビ ===== */
+    .cat-nav{display:flex;gap:4px;flex-wrap:wrap;padding:12px 0 10px;border-bottom:1px solid var(--iw-border);margin-bottom:0}
+    .cat-nav__btn{background:#fff;border:1px solid #b0bcd8;border-radius:3px;padding:4px 12px;font-size:12px;cursor:pointer;color:var(--iw-dark);transition:all .15s;white-space:nowrap;font-family:inherit}
+    .cat-nav__btn:hover{border-color:var(--iw-blue);color:var(--iw-blue);background:var(--iw-blue-light)}
+    .cat-nav__btn.active{background:var(--iw-navy);border-color:var(--iw-navy);color:#fff}
+
+    /* ===== カテゴリセクション ===== */
+    .category-section{margin:24px 0 0}
+    .category-section__heading{font-size:15px;font-weight:bold;color:#fff;background:var(--iw-navy);padding:7px 14px;border-radius:3px 3px 0 0;display:flex;align-items:center;gap:8px}
+    .category-section__heading::before{content:'';display:inline-block;width:3px;height:16px;background:rgba(255,255,255,.5);border-radius:2px}
+
+    /* ===== サービス一覧テーブル ===== */
+    .service-table{width:100%;border-collapse:collapse;border:1px solid var(--iw-border);border-top:none;margin-bottom:4px;background:#fff}
+    .service-table th{background:#dce6f5;font-size:12px;color:var(--iw-gray);font-weight:normal;padding:6px 10px;text-align:left;border-bottom:1px solid var(--iw-border);border-right:1px solid var(--iw-border)}
+    .service-table td{padding:10px 10px;border-bottom:1px solid var(--iw-border);border-right:1px solid var(--iw-border);vertical-align:middle}
+    .service-table tr:last-child td{border-bottom:none}
+    .service-table tr:hover td{background:var(--iw-blue-light)}
+    .col-service{width:22%}.col-plans{width:60%}.col-action{width:18%}
+
+    .service-name{font-weight:bold;font-size:14px;color:var(--iw-dark)}
+    .service-provider{font-size:11px;color:#888;margin-top:2px}
+
+    .price-row{display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 12px;margin-bottom:2px}
+    .price-label{color:var(--iw-gray);font-size:12px;min-width:0}
+    .price-amount{font-weight:bold;font-size:14px;color:var(--iw-dark)}
+    .price-amount.usd{color:#1a6e40}
+    .price-unit{color:var(--iw-gray);font-size:11px}
+
+    .badge-history{display:inline-block;font-size:10px;background:#fff8dc;border:1px solid #c8a000;color:#7a5c00;border-radius:2px;padding:1px 5px;margin-left:4px;vertical-align:middle;white-space:nowrap}
+
+.btn-detail{display:inline-block;background:var(--iw-blue);color:#fff;text-decoration:none;font-size:12px;padding:5px 12px;border-radius:3px;border:none;cursor:pointer;transition:background .15s;font-family:inherit}
+    .btn-detail:hover{background:var(--iw-navy)}
+
+    /* ===== モーダル ===== */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;overflow-y:auto}
+    .modal-overlay.open{display:flex;align-items:flex-start;justify-content:center;padding:40px 12px}
+    .modal{background:#fff;width:100%;max-width:720px;border-radius:4px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,64,.3);animation:slideIn .18s ease}
+    @keyframes slideIn{from{transform:translateY(-16px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+    .modal-header{background:var(--iw-navy);color:#fff;padding:16px 20px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+    .modal-header__title{font-size:18px;font-weight:bold;line-height:1.3}
+    .modal-header__sub{font-size:12px;opacity:.75;margin-top:3px}
+    .modal-close{background:none;border:none;color:#fff;font-size:24px;cursor:pointer;padding:0 4px;opacity:.75;flex-shrink:0;line-height:1;font-family:inherit}
+    .modal-close:hover{opacity:1}
+
+    .modal-body{padding:20px}
+
+    .modal-sec-title{font-size:13px;font-weight:bold;color:#fff;background:var(--iw-blue-mid);padding:5px 12px;margin:18px 0 12px;border-radius:2px}
+    .modal-sec-title:first-child{margin-top:0}
+
+    .modal-desc{font-size:13px;line-height:1.85;color:#333;margin-bottom:8px}
+    .modal-url{font-size:12px;margin-top:6px}
+    .modal-url a{color:var(--iw-link);text-decoration:none}
+    .modal-url a:hover{text-decoration:underline;color:var(--iw-link-hover)}
+
+    /* 価格履歴テーブル */
+    .plan-block{margin-bottom:20px}
+    .plan-name{font-size:13px;font-weight:bold;color:var(--iw-navy);padding:5px 10px;background:var(--iw-blue-light);border-left:3px solid var(--iw-navy);margin-bottom:6px}
+    .plan-desc{font-size:12px;color:var(--iw-gray)}
+
+    .history-table{width:100%;border-collapse:collapse;font-size:13px}
+    .history-table th{background:#dce6f5;padding:6px 10px;text-align:left;font-weight:normal;font-size:12px;color:var(--iw-gray);border:1px solid var(--iw-border)}
+    .history-table td{padding:8px 10px;border:1px solid var(--iw-border);vertical-align:middle}
+    .history-table tr.current td{background:#fffbe6;font-weight:bold}
+
+    .badge-current{display:inline-block;background:var(--iw-navy);color:#fff;font-size:10px;border-radius:2px;padding:1px 5px;margin-left:5px;font-weight:normal;vertical-align:middle}
+    .badge-up{display:inline-block;background:#fde8e8;border:1px solid #c44;color:#900;font-size:10px;border-radius:2px;padding:1px 5px;margin-left:4px;font-weight:normal;vertical-align:middle}
+    .badge-down{display:inline-block;background:#e8fde8;border:1px solid #4a4;color:#060;font-size:10px;border-radius:2px;padding:1px 5px;margin-left:4px;font-weight:normal;vertical-align:middle}
+    .source-link{font-size:11px;color:#aaa}
+    .source-link a{color:var(--iw-link);text-decoration:none}
+    .source-link a:hover{text-decoration:underline}
+
+    /* ===== フッター ===== */
+    .site-footer{background:#1a1a2e;color:#aaa;text-align:center;font-size:11px;padding:20px 12px;margin-top:40px}
+    .site-footer__note{margin-top:8px;font-size:11px;color:#666}
+
+    /* ===== レスポンシブ ===== */
+    @media(max-width:640px){
+      .service-table .col-updated{display:none}
+      .service-table .col-action{width:22%}
+      .modal-overlay.open{padding:0;align-items:flex-end}
+      .modal{border-radius:8px 8px 0 0;max-height:90vh;overflow-y:auto}
+    }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header__inner">
+    <a href="https://www.watch.impress.co.jp/" class="site-header__logo">Impress Watch<span>インプレス</span></a>
+    <div class="site-header__breadcrumb">
+      <a href="https://www.watch.impress.co.jp/">Home</a> &rsaquo; サブスクリプション価格ウォッチ
+    </div>
+  </div>
+</header>
+
+<div class="page-header">
+  <div class="page-header__inner">
+    <h1 class="page-header__title">サブスクリプション価格ウォッチ</h1>
+    <p class="page-header__lead">主要テクノロジー系サブスクリプションサービスの現在価格と価格改定履歴をまとめています。<br>価格は税込・月額を基本とし、ドル建てサービスはUSドル（税別）表記です。</p>
+  </div>
+</div>
+
+<div class="main-wrap">
+  <nav class="cat-nav" id="catNav"></nav>
+  <div id="serviceList"></div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<footer class="site-footer">
+  <div>Copyright &copy; 2024 Impress Corporation. All Rights Reserved.</div>
+  <div class="site-footer__note">掲載価格は編集部確認時点の情報です。最新情報は各サービスの公式サイトをご確認ください。</div>
+</footer>
+
+<script>
+// ===== インラインデータ（fetch不要） =====
+const DB = {"categories":[{"id":"tech-bundle","name":"テクノロジー総合"},{"id":"storage","name":"ストレージ"},{"id":"ai","name":"AI"},{"id":"music","name":"音楽"},{"id":"video","name":"動画"},{"id":"business","name":"ビジネス"},{"id":"game","name":"ゲーム・その他"},{"id":"japan-tech","name":"日本のテック系"}],"services":[{"id":"apple-one","name":"Apple One","provider":"Apple","category":"tech-bundle","url":"https://www.apple.com/jp/apple-one/","url_label":"Apple One詳細ページ","description":"iCloud+のストレージとApple TV+、Apple Music、ゲームのApple Arcadeをセットにしたサブスクリプションプラン。個人はストレージが50GB、ファミリーは200GBで5人までで共有できる。","plans":[{"id":"apple-one-individual","name":"個人","description":"50GBストレージ込み","price_history":[{"amount":1100,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2020-11-01","valid_to":"2023-01-31","source":"https://www.apple.com/jp/apple-one/","note":"サービス開始時"},{"amount":1200,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2023-02-01","valid_to":null,"source":"https://www.apple.com/jp/apple-one/","note":"価格改定"}]},{"id":"apple-one-family","name":"ファミリー","description":"200GBストレージ込み、最大5人","price_history":[{"amount":1850,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2020-11-01","valid_to":"2023-01-31","source":"https://www.apple.com/jp/apple-one/","note":"サービス開始時"},{"amount":1980,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2023-02-01","valid_to":null,"source":"https://www.apple.com/jp/apple-one/","note":"価格改定"}]}]},{"id":"google-one","name":"Google One","provider":"Google","category":"tech-bundle","url":"https://one.google.com/about/plans","url_label":"Google One詳細ページ","description":"Googleドライブのストレージ容量を拡張できるサブスクリプションサービス。プレミアム（2TB）プランではGemini、NotebookLM、Veo 3.1などGoogleのAIサービスを多数利用できる。","plans":[{"id":"google-one-100gb","name":"ベーシック（100GB）","description":"","price_history":[{"amount":250,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2019-01-01","valid_to":"2023-05-31","source":"https://one.google.com/about/plans","note":"旧価格"},{"amount":290,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2023-06-01","valid_to":null,"source":"https://one.google.com/about/plans","note":"価格改定"}]},{"id":"google-one-200gb","name":"スタンダード（200GB）","description":"","price_history":[{"amount":380,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2019-01-01","valid_to":"2023-05-31","source":"https://one.google.com/about/plans","note":"旧価格"},{"amount":440,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2023-06-01","valid_to":null,"source":"https://one.google.com/about/plans","note":"価格改定"}]},{"id":"google-one-2tb","name":"プレミアム（2TB）","description":"Gemini、NotebookLM等のAIサービス含む","price_history":[{"amount":1300,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2019-01-01","valid_to":"2023-05-31","source":"https://one.google.com/about/plans","note":"旧価格"},{"amount":1450,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2023-06-01","valid_to":null,"source":"https://one.google.com/about/plans","note":"価格改定"}]}]},{"id":"amazon-prime","name":"Amazonプライム","provider":"Amazon","category":"tech-bundle","url":"https://www.amazon.co.jp/prime","url_label":"Amazonプライム詳細ページ","description":"配送特典（お急ぎ便・お届け日時指定便無料）に加え、Prime Video、Prime Music、Prime Gaming、Amazon Photos等が利用できる総合サブスクリプション。","plans":[{"id":"amazon-prime-monthly","name":"月額プラン","description":"","price_history":[{"amount":408,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2019-04-01","valid_to":"2023-08-23","source":"https://www.amazon.co.jp/prime","note":"旧価格"},{"amount":600,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2023-08-24","valid_to":null,"source":"https://www.amazon.co.jp/prime","note":"価格改定"}]},{"id":"amazon-prime-annual","name":"年間プラン","description":"","price_history":[{"amount":4900,"currency":"JPY","billing":"annual","tax_included":true,"valid_from":"2019-04-01","valid_to":"2023-08-23","source":"https://www.amazon.co.jp/prime","note":"旧価格"},{"amount":6900,"currency":"JPY","billing":"annual","tax_included":true,"valid_from":"2023-08-24","valid_to":null,"source":"https://www.amazon.co.jp/prime","note":"価格改定"}]}]},{"id":"icloud-plus","name":"iCloud+","provider":"Apple","category":"storage","url":"https://www.apple.com/jp/icloud/","url_label":"iCloud+詳細ページ","description":"AppleのクラウドストレージサービスiCloudの有料プラン。プライベートリレー、メールを非公開等のプライバシー機能も利用できる。","plans":[{"id":"icloud-50gb","name":"50GB","description":"","price_history":[{"amount":130,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2023-01-01","valid_to":null,"source":"https://www.apple.com/jp/icloud/","note":""}]},{"id":"icloud-200gb","name":"200GB","description":"ファミリー共有可能","price_history":[{"amount":400,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2023-01-01","valid_to":null,"source":"https://www.apple.com/jp/icloud/","note":""}]},{"id":"icloud-2tb","name":"2TB","description":"ファミリー共有可能","price_history":[{"amount":1300,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2023-01-01","valid_to":null,"source":"https://www.apple.com/jp/icloud/","note":""}]}]},{"id":"chatgpt-plus","name":"ChatGPT Plus","provider":"OpenAI","category":"ai","url":"https://openai.com/chatgpt/pricing/","url_label":"ChatGPT Plus詳細ページ","description":"OpenAIが提供するAIチャットサービス「ChatGPT」の有料プラン。GPT-4oへの優先アクセス、画像生成（DALL-E）、音声会話機能などが利用できる。","plans":[{"id":"chatgpt-plus-monthly","name":"Plus","description":"","price_history":[{"amount":20,"currency":"USD","billing":"monthly","tax_included":false,"valid_from":"2023-02-01","valid_to":null,"source":"https://openai.com/chatgpt/pricing/","note":"サービス開始時より同価格"}]}]},{"id":"claude-pro","name":"Claude Pro","provider":"Anthropic","category":"ai","url":"https://www.anthropic.com/claude","url_label":"Claude Pro詳細ページ","description":"AnthropicのAIアシスタント「Claude」の有料プラン。無料プランより多くの会話量と、最新モデルへの優先アクセスが可能。","plans":[{"id":"claude-pro-monthly","name":"Pro","description":"","price_history":[{"amount":20,"currency":"USD","billing":"monthly","tax_included":false,"valid_from":"2023-07-01","valid_to":null,"source":"https://www.anthropic.com/claude","note":""}]}]},{"id":"gemini-advanced","name":"Google One AI プレミアム（Gemini Advanced）","provider":"Google","category":"ai","url":"https://one.google.com/about/plans","url_label":"Gemini Advanced詳細ページ","description":"GoogleのAIサービス「Gemini Advanced」を含むGoogle Oneプラン。Gemini 1.5 Pro、NotebookLM Plus、2TBのストレージ等が利用できる。","plans":[{"id":"gemini-advanced-monthly","name":"月額プラン","description":"2TBストレージ含む","price_history":[{"amount":2900,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2024-02-01","valid_to":null,"source":"https://one.google.com/about/plans","note":"サービス開始時"}]}]},{"id":"copilot-pro","name":"Microsoft Copilot Pro","provider":"Microsoft","category":"ai","url":"https://www.microsoft.com/ja-jp/store/b/copilotpro","url_label":"Copilot Pro詳細ページ","description":"MicrosoftのAIサービス「Copilot」の有料プラン。Word、Excel、PowerPoint等のMicrosoft 365アプリへのAI機能統合と、GPT-4 Turboへの優先アクセスが可能。","plans":[{"id":"copilot-pro-monthly","name":"月額プラン","description":"","price_history":[{"amount":3200,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2024-01-15","valid_to":null,"source":"https://www.microsoft.com/ja-jp/store/b/copilotpro","note":"サービス開始時"}]}]},{"id":"spotify","name":"Spotify プレミアム","provider":"Spotify","category":"music","url":"https://www.spotify.com/jp/premium/","url_label":"Spotify プレミアム詳細ページ","description":"スウェーデン発の音楽ストリーミングサービス。1億曲以上とポッドキャストが広告なしで聴き放題。ダウンロードによるオフライン再生にも対応。","plans":[{"id":"spotify-individual","name":"個人","description":"","price_history":[{"amount":980,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2023-07-24","valid_to":null,"source":"https://www.spotify.com/jp/premium/","note":"価格改定"}]},{"id":"spotify-duo","name":"デュオ","description":"2人まで","price_history":[{"amount":1280,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2023-07-24","valid_to":null,"source":"https://www.spotify.com/jp/premium/","note":"価格改定"}]},{"id":"spotify-family","name":"ファミリー","description":"6人まで","price_history":[{"amount":1580,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2023-07-24","valid_to":null,"source":"https://www.spotify.com/jp/premium/","note":"価格改定"}]}]},{"id":"apple-music","name":"Apple Music","provider":"Apple","category":"music","url":"https://www.apple.com/jp/apple-music/","url_label":"Apple Music詳細ページ","description":"Appleの音楽ストリーミングサービス。1億曲以上がロスレス・ハイレゾ音質で聴き放題。空間オーディオ（Dolby Atmos）にも対応。","plans":[{"id":"apple-music-individual","name":"個人","description":"","price_history":[{"amount":1080,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2023-01-01","valid_to":null,"source":"https://www.apple.com/jp/apple-music/","note":"価格改定"}]},{"id":"apple-music-family","name":"ファミリー","description":"6人まで","price_history":[{"amount":1680,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2023-01-01","valid_to":null,"source":"https://www.apple.com/jp/apple-music/","note":"価格改定"}]}]},{"id":"youtube-music","name":"YouTube Music プレミアム","provider":"Google","category":"music","url":"https://music.youtube.com/","url_label":"YouTube Music詳細ページ","description":"Googleが提供する音楽ストリーミングサービス。YouTubeのMVを含む楽曲が聴き放題で、バックグラウンド再生やオフライン再生も可能。","plans":[{"id":"youtube-music-individual","name":"個人","description":"","price_history":[{"amount":980,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2023-11-01","valid_to":null,"source":"https://music.youtube.com/","note":"価格改定"}]},{"id":"youtube-music-family","name":"ファミリー","description":"最大5人","price_history":[{"amount":1480,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2023-11-01","valid_to":null,"source":"https://music.youtube.com/","note":"価格改定"}]}]},{"id":"amazon-music-unlimited","name":"Amazon Music Unlimited","provider":"Amazon","category":"music","url":"https://www.amazon.co.jp/music/unlimited","url_label":"Amazon Music Unlimited詳細ページ","description":"Amazonの音楽ストリーミングサービス。1億曲以上が聴き放題で、Ultra HD・空間オーディオにも対応。プライム会員向け割引あり。","plans":[{"id":"amazon-music-prime","name":"プライム会員向け","description":"","price_history":[{"amount":880,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2023-01-01","valid_to":null,"source":"https://www.amazon.co.jp/music/unlimited","note":""}]},{"id":"amazon-music-standard","name":"通常","description":"","price_history":[{"amount":1080,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2023-01-01","valid_to":null,"source":"https://www.amazon.co.jp/music/unlimited","note":""}]},{"id":"amazon-music-family","name":"ファミリー","description":"最大6人","price_history":[{"amount":1680,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2023-01-01","valid_to":null,"source":"https://www.amazon.co.jp/music/unlimited","note":""}]}]},{"id":"line-music","name":"LINE MUSIC","provider":"LINE","category":"music","url":"https://music.line.me/","url_label":"LINE MUSIC詳細ページ","description":"LINEが提供する音楽ストリーミングサービス。LINEとの連携機能が特徴で、着信音や通話中BGMへの楽曲設定も可能。","plans":[{"id":"line-music-standard","name":"スタンダード","description":"","price_history":[{"amount":980,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2023-01-01","valid_to":null,"source":"https://music.line.me/","note":""}]},{"id":"line-music-student","name":"学割","description":"学生向け","price_history":[{"amount":480,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2023-01-01","valid_to":null,"source":"https://music.line.me/","note":""}]}]},{"id":"netflix","name":"Netflix","provider":"Netflix","category":"video","url":"https://www.netflix.com/jp/","url_label":"Netflix詳細ページ","description":"世界最大の動画ストリーミングサービス。オリジナルコンテンツを多数制作・配信。広告付きスタンダードプランから4K対応プレミアムプランまで選べる。","plans":[{"id":"netflix-ads","name":"広告付きスタンダード","description":"1080p、同時2画面","price_history":[{"amount":790,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2022-11-04","valid_to":null,"source":"https://www.netflix.com/jp/","note":"広告付きプラン開始時"}]},{"id":"netflix-standard","name":"スタンダード","description":"1080p、同時2画面","price_history":[{"amount":1490,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2023-10-19","valid_to":null,"source":"https://www.netflix.com/jp/","note":"価格改定"}]},{"id":"netflix-premium","name":"プレミアム","description":"4K・HDR、同時4画面","price_history":[{"amount":1980,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2023-10-19","valid_to":null,"source":"https://www.netflix.com/jp/","note":"価格改定"}]}]},{"id":"disney-plus","name":"Disney+","provider":"The Walt Disney Company","category":"video","url":"https://www.disneyplus.com/ja-jp","url_label":"Disney+詳細ページ","description":"ディズニー、ピクサー、マーベル、スター・ウォーズ、ナショナルジオグラフィックのコンテンツを中心に配信。スター枠では多様なエンタメ作品も視聴可能。","plans":[{"id":"disney-plus-standard-ads","name":"スタンダード（広告付き）","description":"同時2画面","price_history":[{"amount":990,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2024-11-14","valid_to":null,"source":"https://www.disneyplus.com/ja-jp","note":""}]},{"id":"disney-plus-standard","name":"スタンダード","description":"同時2画面","price_history":[{"amount":1320,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2024-11-14","valid_to":null,"source":"https://www.disneyplus.com/ja-jp","note":""}]},{"id":"disney-plus-premium","name":"プレミアム","description":"4K・HDR、同時4画面","price_history":[{"amount":1650,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2024-11-14","valid_to":null,"source":"https://www.disneyplus.com/ja-jp","note":""}]}]},{"id":"youtube-premium","name":"YouTube Premium","provider":"Google","category":"video","url":"https://www.youtube.com/premium","url_label":"YouTube Premium詳細ページ","description":"YouTubeの広告なし視聴、バックグラウンド再生、オフライン再生が可能な有料プラン。YouTube Music Premiumも同時に利用できる。","plans":[{"id":"youtube-premium-individual","name":"個人","description":"","price_history":[{"amount":1180,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2023-11-01","valid_to":null,"source":"https://www.youtube.com/premium","note":"価格改定"}]},{"id":"youtube-premium-family","name":"ファミリー","description":"最大5人","price_history":[{"amount":2280,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2023-11-01","valid_to":null,"source":"https://www.youtube.com/premium","note":"価格改定"}]}]},{"id":"unext","name":"U-NEXT","provider":"U-NEXT","category":"video","url":"https://video.unext.jp/","url_label":"U-NEXT詳細ページ","description":"国内最大級の動画配信サービス。映画・ドラマ・アニメ・漫画など31万本以上のコンテンツを配信。毎月1,200ポイントが付与され、最新作の購入にも使える。","plans":[{"id":"unext-standard","name":"月額プラン","description":"毎月1,200ポイント付与","price_history":[{"amount":2189,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2023-06-01","valid_to":null,"source":"https://video.unext.jp/","note":"価格改定"}]}]},{"id":"hulu","name":"Hulu","provider":"HJホールディングス","category":"video","url":"https://www.hulu.jp/","url_label":"Hulu詳細ページ","description":"日本テレビ傘下の動画配信サービス。日本テレビ系の人気ドラマ・バラエティが充実しており、海外ドラマも豊富に取り揃えている。","plans":[{"id":"hulu-standard","name":"月額プラン","description":"","price_history":[{"amount":1026,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2022-02-01","valid_to":null,"source":"https://www.hulu.jp/","note":"価格改定"}]}]},{"id":"apple-tv-plus","name":"Apple TV+","provider":"Apple","category":"video","url":"https://www.apple.com/jp/apple-tv-plus/","url_label":"Apple TV+詳細ページ","description":"Appleが制作するオリジナルコンテンツ専門の動画配信サービス。受賞歴のある作品を多数配信。","plans":[{"id":"apple-tv-plus-standard","name":"月額プラン","description":"ファミリー共有可能（6人まで）","price_history":[{"amount":900,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2023-01-01","valid_to":null,"source":"https://www.apple.com/jp/apple-tv-plus/","note":"価格改定"}]}]},{"id":"dazn","name":"DAZN","provider":"DAZN","category":"video","url":"https://www.dazn.com/ja-JP/","url_label":"DAZN詳細ページ","description":"スポーツ専門の動画配信サービス。Jリーグ、プロ野球、F1、ボクシングなど多様なスポーツを生配信。","plans":[{"id":"dazn-standard","name":"月額プラン（年間契約）","description":"","price_history":[{"amount":4200,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2024-02-15","valid_to":null,"source":"https://www.dazn.com/ja-JP/","note":"価格改定"}]}]},{"id":"d-anime-store","name":"dアニメストア","provider":"NTTドコモ","category":"video","url":"https://animestore.docomo.ne.jp/","url_label":"dアニメストア詳細ページ","description":"NTTドコモが運営するアニメ専門の動画配信サービス。最新作から名作まで6,000タイトル以上を配信。","plans":[{"id":"d-anime-standard","name":"月額プラン","description":"","price_history":[{"amount":550,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2021-04-01","valid_to":null,"source":"https://animestore.docomo.ne.jp/","note":""}]}]},{"id":"abema-premium","name":"ABEMAプレミアム","provider":"AbemaTV","category":"video","url":"https://abema.tv/","url_label":"ABEMAプレミアム詳細ページ","description":"サイバーエージェントとテレビ朝日が共同運営する動画配信サービス「ABEMA」の有料プラン。オリジナルアニメ・ドラマ・スポーツの見逃し配信が可能。","plans":[{"id":"abema-premium-monthly","name":"月額プラン","description":"","price_history":[{"amount":960,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2022-04-01","valid_to":null,"source":"https://abema.tv/","note":""}]}]},{"id":"lemino","name":"Lemino","provider":"NTTドコモ","category":"video","url":"https://lemino.docomo.ne.jp/","url_label":"Lemino詳細ページ","description":"NTTドコモが2023年に開始した動画配信サービス。映画・ドラマ・スポーツ・アニメなどを配信し、一部コンテンツは無料で視聴可能。","plans":[{"id":"lemino-premium","name":"プレミアム","description":"","price_history":[{"amount":990,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2023-04-05","valid_to":null,"source":"https://lemino.docomo.ne.jp/","note":"サービス開始時"}]}]},{"id":"fod","name":"FOD","provider":"フジテレビ","category":"video","url":"https://fod.fujitv.co.jp/","url_label":"FOD詳細ページ","description":"フジテレビが運営する動画配信サービス。フジテレビ系の過去ドラマ・バラエティが充実しており、雑誌読み放題サービスも付帯。","plans":[{"id":"fod-premium","name":"プレミアム","description":"雑誌読み放題含む","price_history":[{"amount":976,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2022-01-01","valid_to":null,"source":"https://fod.fujitv.co.jp/","note":""}]}]},{"id":"dmm-tv","name":"DMM TV","provider":"DMM.com","category":"video","url":"https://tv.dmm.com/","url_label":"DMM TV詳細ページ","description":"DMM.comが運営する動画配信サービス。アニメ・映画・ドラマを中心に配信し、DMMポイントとの連携も利用できる。","plans":[{"id":"dmm-tv-standard","name":"プレミアム","description":"","price_history":[{"amount":550,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2022-03-01","valid_to":null,"source":"https://tv.dmm.com/","note":"サービス開始時"}]}]},{"id":"google-workspace","name":"Google Workspace","provider":"Google","category":"business","url":"https://workspace.google.com/intl/ja/","url_label":"Google Workspace詳細ページ","description":"GoogleのビジネスSuiteサービス。Gmail、Google Drive、Meet、Docs等の業務ツールをひとつにまとめて提供。プランごとにストレージ容量や機能が異なる。","plans":[{"id":"google-workspace-starter","name":"Business Starter","description":"30GBストレージ/ユーザー","price_history":[{"amount":816,"currency":"JPY","billing":"monthly","tax_included":false,"valid_from":"2023-01-01","valid_to":null,"source":"https://workspace.google.com/intl/ja/","note":"1ユーザーあたり（税別）"}]},{"id":"google-workspace-standard","name":"Business Standard","description":"2TBストレージ/ユーザー","price_history":[{"amount":1632,"currency":"JPY","billing":"monthly","tax_included":false,"valid_from":"2023-01-01","valid_to":null,"source":"https://workspace.google.com/intl/ja/","note":"1ユーザーあたり（税別）"}]}]},{"id":"microsoft-365","name":"Microsoft 365","provider":"Microsoft","category":"business","url":"https://www.microsoft.com/ja-jp/microsoft-365","url_label":"Microsoft 365詳細ページ","description":"MicrosoftのOffice Suiteサービス。Word、Excel、PowerPoint等のOfficeアプリと1TBのOneDriveストレージがセットになった定額サービス。個人・ファミリー・ビジネス向けプランが用意されている。","plans":[{"id":"m365-personal","name":"Personal（個人向け）","description":"1ユーザー、1TB OneDrive","price_history":[{"amount":1490,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2024-04-01","valid_to":null,"source":"https://www.microsoft.com/ja-jp/microsoft-365","note":"価格改定"}]},{"id":"m365-family","name":"Family（ファミリー向け）","description":"最大6ユーザー、各1TB OneDrive","price_history":[{"amount":2100,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2024-04-01","valid_to":null,"source":"https://www.microsoft.com/ja-jp/microsoft-365","note":"価格改定"}]},{"id":"m365-business-basic","name":"Business Basic","description":"1TBストレージ/ユーザー、Webアプリのみ","price_history":[{"amount":899,"currency":"JPY","billing":"monthly","tax_included":false,"valid_from":"2023-04-01","valid_to":null,"source":"https://www.microsoft.com/ja-jp/microsoft-365","note":"1ユーザーあたり（税別）"}]}]},{"id":"notion","name":"Notion","provider":"Notion Labs","category":"business","url":"https://www.notion.com/ja/pricing","url_label":"Notion詳細ページ","description":"ノート・Wiki・プロジェクト管理・データベースが一体化したオールインワン生産性ツール。AI機能も搭載し、個人から大企業まで幅広く利用されている。","plans":[{"id":"notion-plus","name":"Plus","description":"個人・小規模チーム向け","price_history":[{"amount":16,"currency":"USD","billing":"monthly","tax_included":false,"valid_from":"2024-01-01","valid_to":null,"source":"https://www.notion.com/ja/pricing","note":"1ユーザーあたり（税別）"}]},{"id":"notion-business","name":"Business","description":"チーム・企業向け","price_history":[{"amount":18,"currency":"USD","billing":"monthly","tax_included":false,"valid_from":"2024-01-01","valid_to":null,"source":"https://www.notion.com/ja/pricing","note":"1ユーザーあたり（税別）"}]}]},{"id":"nintendo-switch-online","name":"Nintendo Switch Online","provider":"任天堂","category":"game","url":"https://www.nintendo.com/jp/switch/online/","url_label":"Nintendo Switch Online詳細ページ","description":"Nintendo Switchのオンラインプレイに必須のサービス。ファミコン・スーパーファミコン・Nintendo 64等のクラシックゲームが遊び放題。","plans":[{"id":"nso-individual","name":"個人プラン","description":"","price_history":[{"amount":2400,"currency":"JPY","billing":"annual","tax_included":true,"valid_from":"2018-09-19","valid_to":null,"source":"https://www.nintendo.com/jp/switch/online/","note":"サービス開始時より同価格"}]},{"id":"nso-family","name":"ファミリープラン","description":"最大8人","price_history":[{"amount":4500,"currency":"JPY","billing":"annual","tax_included":true,"valid_from":"2018-09-19","valid_to":null,"source":"https://www.nintendo.com/jp/switch/online/","note":"サービス開始時より同価格"}]}]},{"id":"playstation-plus","name":"PlayStation Plus","provider":"ソニー・インタラクティブエンタテインメント","category":"game","url":"https://www.playstation.com/ja-jp/ps-plus/","url_label":"PlayStation Plus詳細ページ","description":"PlayStation Network向けのサブスクリプションサービス。オンラインマルチプレイのほか、月替わりのフリープレイゲームや各種割引特典を提供。Extraプランではゲームカタログも利用可能。","plans":[{"id":"psplus-essential","name":"Essential","description":"オンラインプレイ＋月2本フリープレイ","price_history":[{"amount":850,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2023-09-06","valid_to":null,"source":"https://www.playstation.com/ja-jp/ps-plus/","note":"価格改定"}]},{"id":"psplus-extra","name":"Extra","description":"Essential＋ゲームカタログ","price_history":[{"amount":1300,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2023-09-06","valid_to":null,"source":"https://www.playstation.com/ja-jp/ps-plus/","note":"価格改定"}]},{"id":"psplus-deluxe","name":"Deluxe","description":"Extra＋クラシックゲームカタログ","price_history":[{"amount":1550,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2023-09-06","valid_to":null,"source":"https://www.playstation.com/ja-jp/ps-plus/","note":"価格改定"}]}]},{"id":"xbox-game-pass","name":"Xbox Game Pass","provider":"Microsoft","category":"game","url":"https://www.xbox.com/ja-JP/xbox-game-pass","url_label":"Xbox Game Pass詳細ページ","description":"Microsoftが提供するゲームサブスクリプションサービス。数百本のゲームが遊び放題で、Xboxコンソール・PC・クラウドで利用可能。","plans":[{"id":"xbox-gp-core","name":"Game Pass Core","description":"オンラインプレイ＋一部ゲーム","price_history":[{"amount":850,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2023-09-01","valid_to":null,"source":"https://www.xbox.com/ja-JP/xbox-game-pass","note":""}]},{"id":"xbox-gp-pc","name":"Game Pass PC","description":"PC向けゲームカタログ","price_history":[{"amount":850,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2023-09-01","valid_to":null,"source":"https://www.xbox.com/ja-JP/xbox-game-pass","note":""}]},{"id":"xbox-gp-ultimate","name":"Game Pass Ultimate","description":"コンソール＋PC＋クラウド＋EA Play","price_history":[{"amount":1210,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2023-09-01","valid_to":null,"source":"https://www.xbox.com/ja-JP/xbox-game-pass","note":""}]}]},{"id":"lyp-premium","name":"LYPプレミアム","provider":"LINEヤフー","category":"japan-tech","url":"https://premium.yahoo.co.jp/","url_label":"LYPプレミアム詳細ページ","description":"LINEヤフーが提供する会員サービス。Yahoo!ショッピングでのポイント還元率アップ、各種サービスの優待など多数の特典がある。","plans":[{"id":"lyp-premium-standard","name":"月額プラン","description":"","price_history":[{"amount":508,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2024-04-01","valid_to":null,"source":"https://premium.yahoo.co.jp/","note":"LYPプレミアムへのリブランド"}]}]},{"id":"ponta-pass","name":"Pontaパス","provider":"au（KDDI）","category":"japan-tech","url":"https://pass.auone.jp/ponta/","url_label":"Pontaパス詳細ページ","description":"KDDIが提供するauユーザー向け優待サービス。Pontaポイントの付与率アップや、対象店舗でのクーポン特典が利用できる。","plans":[{"id":"ponta-pass-standard","name":"月額プラン","description":"auユーザー向け","price_history":[{"amount":548,"currency":"JPY","billing":"monthly","tax_included":true,"valid_from":"2022-11-01","valid_to":null,"source":"https://pass.auone.jp/ponta/","note":""}]}]},{"id":"rakuten-premium","name":"楽天プレミアム","provider":"楽天グループ","category":"japan-tech","url":"https://premium.rakuten.co.jp/","url_label":"楽天プレミアム詳細ページ","description":"楽天グループの上位会員サービス。楽天市場でのSPUポイント倍率アップ、空港ラウンジ利用権（プライオリティ・パス）、楽天トラベルの優待などが付帯する。","plans":[{"id":"rakuten-premium-annual","name":"年間プラン","description":"","price_history":[{"amount":11000,"currency":"JPY","billing":"annual","tax_included":true,"valid_from":"2019-01-01","valid_to":null,"source":"https://premium.rakuten.co.jp/","note":""}]}]}]};
+
+// ===== ユーティリティ =====
+const categoryMap = Object.fromEntries(DB.categories.map(c=>[c.id,c.name]));
+
+function getCurrentPrice(plan){
+  return plan.price_history.find(p=>p.valid_to===null);
+}
+
+function fmtAmount(p){
+  if(p.currency==='JPY') return p.amount.toLocaleString()+'円';
+  return p.amount+' USドル（税別）';
+}
+
+function fmtBilling(b){
+  return b==='monthly'?'/月':b==='annual'?'/年':'';
+}
+
+function fmtTax(p){
+  if(p.currency==='USD') return '';
+  return p.tax_included ? '' : '（税別）';
+}
+
+function hasHistoryEntry(plan){
+  return plan.price_history.some(p=>p.valid_to!==null);
+}
+
+function fmtYM(str){
+  if(!str) return '現在';
+  const d=new Date(str);
+  return d.getFullYear()+'年'+(d.getMonth()+1)+'月';
+}
+
+// ===== カテゴリナビ =====
+const catNav=document.getElementById('catNav');
+[{id:'all',name:'すべて'},...DB.categories].forEach((cat,i)=>{
+  const btn=document.createElement('button');
+  btn.className='cat-nav__btn'+(i===0?' active':'');
+  btn.textContent=cat.name;
+  btn.dataset.cat=cat.id;
+  catNav.appendChild(btn);
+});
+catNav.addEventListener('click',e=>{
+  const btn=e.target.closest('.cat-nav__btn');
+  if(!btn)return;
+  document.querySelectorAll('.cat-nav__btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderList(btn.dataset.cat);
+});
+
+// ===== 一覧レンダリング =====
+function renderList(filterCat){
+  const container=document.getElementById('serviceList');
+  container.innerHTML='';
+  const cats=filterCat==='all'?DB.categories:DB.categories.filter(c=>c.id===filterCat);
+
+  cats.forEach(cat=>{
+    const services=DB.services.filter(s=>s.category===cat.id);
+    if(!services.length)return;
+
+    const section=document.createElement('section');
+    section.className='category-section';
+
+    const heading=document.createElement('h2');
+    heading.className='category-section__heading';
+    heading.textContent=cat.name;
+    section.appendChild(heading);
+
+    const table=document.createElement('table');
+    table.className='service-table';
+    table.innerHTML=`<colgroup><col class="col-service"><col class="col-plans"><col class="col-action"></colgroup>
+      <thead><tr>
+        <th>サービス名</th><th>現在の価格</th><th></th>
+      </tr></thead><tbody></tbody>`;
+
+    const tbody=table.querySelector('tbody');
+    services.forEach(svc=>{
+      const tr=document.createElement('tr');
+
+      // 価格セル
+      const priceHtml=svc.plans.map(plan=>{
+        const cur=getCurrentPrice(plan);
+        if(!cur)return '';
+        const isUSD=cur.currency==='USD';
+        const taxNote=fmtTax(cur);
+        return `<div class="price-row">
+          <span class="price-label">${plan.name}</span>
+          <span class="price-amount${isUSD?' usd':''}">${fmtAmount(cur)}${taxNote}</span>
+          <span class="price-unit">${fmtBilling(cur.billing)}</span>
+          ${hasHistoryEntry(plan)?'<span class="badge-history">改定履歴あり</span>':''}
+        </div>`;
+      }).join('');
+
+      tr.innerHTML=`
+        <td><div class="service-name">${svc.name}</div><div class="service-provider">${svc.provider}</div></td>
+        <td>${priceHtml}</td>
+        <td><button class="btn-detail" data-id="${svc.id}">詳細・推移 ›</button></td>`;
+      tbody.appendChild(tr);
+    });
+
+    section.appendChild(table);
+    container.appendChild(section);
+  });
+}
+
+// ===== モーダル =====
+const overlay=document.getElementById('modalOverlay');
+
+document.getElementById('serviceList').addEventListener('click',e=>{
+  const btn=e.target.closest('.btn-detail');
+  if(btn) openModal(btn.dataset.id);
+});
+overlay.addEventListener('click',e=>{ if(e.target===overlay)closeModal(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape')closeModal(); });
+
+function openModal(id){
+  const svc=DB.services.find(s=>s.id===id);
+  if(!svc)return;
+
+  let plansHtml='';
+  svc.plans.forEach(plan=>{
+    const sorted=[...plan.price_history].sort((a,b)=>new Date(b.valid_from)-new Date(a.valid_from));
+    const rows=sorted.map((h,idx)=>{
+      const isCur=h.valid_to===null;
+      const period=isCur?`${fmtYM(h.valid_from)} 〜 現在`:`${fmtYM(h.valid_from)} 〜 ${fmtYM(h.valid_to)}`;
+      const next=sorted[idx+1];
+      let changeBadge='';
+      if(next){
+        if(h.amount>next.amount) changeBadge='<span class="badge-up">値上げ</span>';
+        else if(h.amount<next.amount) changeBadge='<span class="badge-down">値下げ</span>';
+      }
+      const taxNote=fmtTax(h);
+      const srcHtml=h.source?`<span class="source-link">（<a href="${h.source}" target="_blank" rel="noopener">出典</a>）</span>`:'';
+      return `<tr class="${isCur?'current':''}">
+        <td>${period}</td>
+        <td>${fmtAmount(h)}${taxNote}${fmtBilling(h.billing)}${isCur?'<span class="badge-current">現在</span>':''}${changeBadge}</td>
+        <td>${h.note||'—'} ${srcHtml}</td>
+      </tr>`;
+    }).join('');
+
+    const nameDesc=plan.name+(plan.description?' — '+plan.description:'');
+    plansHtml+=`<div class="plan-block">
+      <div class="plan-name">${nameDesc}</div>
+      <table class="history-table">
+        <thead><tr>
+          <th style="width:32%">適用期間</th>
+          <th style="width:32%">価格</th>
+          <th style="width:36%">備考</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+  });
+
+  document.getElementById('modalContent').innerHTML=`
+    <div class="modal-header">
+      <div>
+        <div class="modal-header__title">${svc.name}</div>
+        <div class="modal-header__sub">${svc.provider} &mdash; ${categoryMap[svc.category]||''}</div>
+      </div>
+      <button class="modal-close" id="modalCloseBtn" aria-label="閉じる">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-sec-title">サービス概要</p>
+      <p class="modal-desc">${svc.description}</p>
+      <p class="modal-url">公式サイト：<a href="${svc.url}" target="_blank" rel="noopener">${svc.url_label} ↗</a></p>
+      <p class="modal-sec-title">価格一覧・改定履歴</p>
+      ${plansHtml}
+    </div>`;
+
+  overlay.classList.add('open');
+  document.body.style.overflow='hidden';
+  document.getElementById('modalCloseBtn').addEventListener('click',closeModal);
+}
+
+function closeModal(){
+  overlay.classList.remove('open');
+  document.body.style.overflow='';
+}
+
+renderList('all');
+</script>
+</body>
+</html>
