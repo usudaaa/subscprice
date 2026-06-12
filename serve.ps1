@@ -15,7 +15,7 @@ try {
             $method  = $ctx.Request.HttpMethod
             $urlPath = $ctx.Request.Url.LocalPath
 
-            # POST /save: update index.html DB block from edit.html
+            # POST /save: write DB to data/db.json
             if ($method -eq 'POST' -and $urlPath -eq '/save') {
                 try {
                     $reader = New-Object System.IO.StreamReader($ctx.Request.InputStream, [System.Text.Encoding]::UTF8)
@@ -26,52 +26,12 @@ try {
                     # Use raw body directly — avoids PowerShell single-element array bug
                     $compact = $body.Trim()
 
-                    $indexPath    = Join-Path $root 'index.html'
-                    $indexContent = [System.IO.File]::ReadAllText($indexPath, [System.Text.Encoding]::UTF8)
-
-                    $marker    = 'const DB = '
-                    $markerIdx = $indexContent.IndexOf($marker)
-                    $bStart    = $indexContent.IndexOf('{', $markerIdx)
-                    $depth = 0; $inStr = $false; $esc = $false; $bEnd = -1
-                    for ($i = $bStart; $i -lt $indexContent.Length; $i++) {
-                        $ch = $indexContent[$i]
-                        if ($esc)          { $esc = $false; continue }
-                        if ($ch -eq '\')   { $esc = $true;  continue }
-                        if ($ch -eq '"')   { $inStr = -not $inStr; continue }
-                        if ($inStr)        { continue }
-                        if ($ch -eq '{')   { $depth++ }
-                        elseif ($ch -eq '}') { $depth--; if ($depth -eq 0) { $bEnd = $i; break } }
-                    }
-                    $semiIdx = $indexContent.IndexOf(';', $bEnd)
-
-                    $before = $indexContent.Substring(0, $markerIdx + $marker.Length)
-                    $after  = $indexContent.Substring($semiIdx + 1)
-                    [System.IO.File]::WriteAllText($indexPath, ($before + $compact + ';' + $after), (New-Object System.Text.UTF8Encoding $false))
-
-                    # edit.html も同時更新（ズレ防止）
-                    $editPath    = Join-Path $root 'edit.html'
-                    $editContent = [System.IO.File]::ReadAllText($editPath, [System.Text.Encoding]::UTF8)
-                    $eMarker    = 'let DB = '
-                    $eMarkerIdx = $editContent.IndexOf($eMarker)
-                    $eBStart    = $editContent.IndexOf('{', $eMarkerIdx)
-                    $depth = 0; $inStr = $false; $esc = $false; $eBEnd = -1
-                    for ($i = $eBStart; $i -lt $editContent.Length; $i++) {
-                        $ch = $editContent[$i]
-                        if ($esc)          { $esc = $false; continue }
-                        if ($ch -eq '\')   { $esc = $true;  continue }
-                        if ($ch -eq '"')   { $inStr = -not $inStr; continue }
-                        if ($inStr)        { continue }
-                        if ($ch -eq '{')   { $depth++ }
-                        elseif ($ch -eq '}') { $depth--; if ($depth -eq 0) { $eBEnd = $i; break } }
-                    }
-                    $eSemiIdx = $editContent.IndexOf(';', $eBEnd)
-                    $eBefore  = $editContent.Substring(0, $eMarkerIdx + $eMarker.Length)
-                    $eAfter   = $editContent.Substring($eSemiIdx + 1)
-                    [System.IO.File]::WriteAllText($editPath, ($eBefore + $compact + ';' + $eAfter), (New-Object System.Text.UTF8Encoding $false))
+                    $dbPath = Join-Path $root 'data\db.json'
+                    [System.IO.File]::WriteAllText($dbPath, $compact, (New-Object System.Text.UTF8Encoding $false))
 
                     $svcCount  = $dbObj.services.Count
                     $planCount = ($dbObj.services | ForEach-Object { $_.plans.Count } | Measure-Object -Sum).Sum
-                    Write-Host ("[SAVE] index.html + edit.html updated  services=$svcCount  plans=$planCount")
+                    Write-Host ("[SAVE] data/db.json updated  services=$svcCount  plans=$planCount")
                     $resp = '{"ok":true}'
                 } catch {
                     $msg  = ($_.Exception.Message -replace '\\','\\' -replace '"','\"')
