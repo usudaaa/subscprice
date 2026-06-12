@@ -21,8 +21,10 @@ try {
                     $reader = New-Object System.IO.StreamReader($ctx.Request.InputStream, [System.Text.Encoding]::UTF8)
                     $body = $reader.ReadToEnd()
 
-                    $dbObj   = $body | ConvertFrom-Json
-                    $compact = $dbObj | ConvertTo-Json -Depth 20 -Compress
+                    # Validate JSON (parse only for count reporting)
+                    $dbObj = $body | ConvertFrom-Json
+                    # Use raw body directly — avoids PowerShell single-element array bug
+                    $compact = $body.Trim()
 
                     $indexPath    = Join-Path $root 'index.html'
                     $indexContent = [System.IO.File]::ReadAllText($indexPath, [System.Text.Encoding]::UTF8)
