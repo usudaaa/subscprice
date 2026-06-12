@@ -27,6 +27,11 @@
     .btn-sm{font-size:12px;padding:4px 10px}
     .btn-danger{background:#c00;color:#fff}
     .btn-ghost{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3)}
+    .btn-green{background:#1a7a3a;color:#fff}
+    .btn-green:hover{background:#145f2d}
+    #saveStatus{font-size:12px;padding:3px 10px;border-radius:3px;display:none;margin-left:4px}
+    #saveStatus.ok{display:inline;background:#d4edda;color:#155724;border:1px solid #c3e6cb}
+    #saveStatus.err{display:inline;background:#f8d7da;color:#721c24;border:1px solid #f5c6cb}
 
     /* ===== レイアウト ===== */
     .layout{display:grid;grid-template-columns:260px 1fr;gap:0;min-height:calc(100vh - 52px)}
@@ -100,6 +105,8 @@
 <!-- ツールバー -->
 <div class="toolbar">
   <div class="toolbar__title">📋 サブスクリプション価格ウォッチ <span class="toolbar__badge">編集ツール</span></div>
+  <button class="btn btn-green btn-sm" onclick="saveToIndex()" id="btnSaveToIndex">⬆ index.htmlに即反映</button>
+  <span id="saveStatus"></span>
   <button class="btn btn-ghost btn-sm" onclick="openCopyModal()">全データをコピー／エクスポート</button>
   <a href="index.html" class="btn btn-primary btn-sm" target="_blank">← 一覧ページを確認</a>
 </div>
@@ -455,6 +462,37 @@ function downloadExport() {
   URL.revokeObjectURL(a.href);
   document.getElementById('saveDone').style.display = 'block';
   document.getElementById('copyDone').style.display = 'none';
+}
+
+// ===== index.htmlへ即反映 =====
+async function saveToIndex() {
+  const btn = document.getElementById('btnSaveToIndex');
+  const status = document.getElementById('saveStatus');
+  btn.disabled = true;
+  btn.textContent = '保存中...';
+  status.className = '';
+  status.textContent = '';
+  try {
+    const res = await fetch('/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(DB)
+    });
+    const data = await res.json();
+    if (data.ok) {
+      status.className = 'ok';
+      status.textContent = '✔ 反映しました！index.htmlをリロードすると更新されます';
+      setTimeout(() => { status.className = ''; status.textContent = ''; }, 4000);
+    } else {
+      throw new Error(data.error || '不明なエラー');
+    }
+  } catch (e) {
+    status.className = 'err';
+    status.textContent = '✖ 失敗（serve.ps1が起動中か確認してください）';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '⬆ index.htmlに即反映';
+  }
 }
 
 // ===== ユーティリティ =====

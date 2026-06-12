@@ -14,6 +14,70 @@ try {
         try {
             $method  = $ctx.Request.HttpMethod
             $urlPath = $ctx.Request.Url.LocalPath
+
+            # POST /save: update index.html DB block from edit.html
+            if ($method -eq 'POST' -and $urlPath -eq '/save') {
+                try {
+                    $reader = New-Object System.IO.StreamReader($ctx.Request.InputStream, [System.Text.Encoding]::UTF8)
+                    $body = $reader.ReadToEnd()
+
+                    $dbObj   = $body | ConvertFrom-Json
+                    $compact = $dbObj | ConvertTo-Json -Depth 20 -Compress
+
+                    $indexPath    = Join-Path $root 'index.html'
+                    $indexContent = [System.IO.File]::ReadAllText($indexPath, [System.Text.Encoding]::UTF8)
+
+                    $marker    = 'const DB = '
+                    $markerIdx = $indexContent.IndexOf($marker)
+                    $bStart    = $indexContent.IndexOf('{', $markerIdx)
+                    $depth = 0; $inStr = $false; $esc = $false; $bEnd = -1
+                    for ($i = $bStart; $i -lt $indexContent.Length; $i++) {
+                        $ch = $indexContent[$i]
+                        if ($esc)          { $esc = $false; continue }
+                        if ($ch -eq '\')   { $esc = $true;  continue }
+                        if ($ch -eq '"')   { $inStr = -not $inStr; continue }
+                        if ($inStr)        { continue }
+                        if ($ch -eq '{')   { $depth++ }
+                        elseif ($ch -eq '}') { $depth--; if ($depth -eq 0) { $bEnd = $i; break } }
+                    }
+                    $semiIdx = $indexContent.IndexOf(';', $bEnd)
+
+                    $before = $indexContent.Substring(0, $markerIdx + $marker.Length)
+                    $after  = $indexContent.Substring($semiIdx + 1)
+                    [System.IO.File]::WriteAllText($indexPath, ($before + $compact + ';' + $after), (New-Object System.Text.UTF8Encoding $false))
+
+                    $svcCount  = $dbObj.services.Count
+                    $planCount = ($dbObj.services | ForEach-Object { $_.plans.Count } | Measure-Object -Sum).Sum
+                    Write-Host ("[SAVE] index.html updated  services=$svcCount  plans=$planCount")
+                    $resp = '{"ok":true}'
+                } catch {
+                    $msg  = ($_.Exception.Message -replace '\\','\\' -replace '"','\"')
+                    $resp = "{`"ok`":false,`"error`":`"$msg`"}"
+                    Write-Warning "[SAVE ERROR] $_"
+                }
+                $rb = [System.Text.Encoding]::UTF8.GetBytes($resp)
+                $ctx.Response.StatusCode       = 200
+                $ctx.Response.ContentType      = 'application/json; charset=utf-8'
+                $ctx.Response.Headers.Add('Access-Control-Allow-Origin', '*')
+                $ctx.Response.KeepAlive        = $false
+                $ctx.Response.ContentLength64  = $rb.LongLength
+                $ctx.Response.OutputStream.Write($rb, 0, $rb.Length)
+                $ctx.Response.OutputStream.Flush()
+                continue
+            }
+
+            # OPTIONS preflight (CORS)
+            if ($method -eq 'OPTIONS') {
+                $ctx.Response.StatusCode = 204
+                $ctx.Response.Headers.Add('Access-Control-Allow-Origin', '*')
+                $ctx.Response.Headers.Add('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
+                $ctx.Response.Headers.Add('Access-Control-Allow-Headers', 'Content-Type')
+                $ctx.Response.KeepAlive = $false
+                $ctx.Response.Close()
+                continue
+            }
+
+            # GET: static file serving
             if ($urlPath -eq '/') { $urlPath = '/index.html' }
             $filePath = Join-Path $root ($urlPath.TrimStart('/') -replace '/', '\')
 
