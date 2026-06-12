@@ -74,14 +74,14 @@
     .service-table tr:hover td{background:var(--iw-blue-light)}
     .col-service{width:22%}.col-plans{width:60%}.col-action{width:18%}
 
-    .service-name{font-weight:bold;font-size:14px;color:var(--iw-dark)}
+    .service-name{font-weight:bold;font-size:16px;color:var(--iw-dark)}
     .service-provider{font-size:11px;color:#888;margin-top:2px}
 
     .price-row{display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 12px;margin-bottom:2px}
-    .price-label{color:var(--iw-gray);font-size:12px;min-width:0}
-    .price-amount{font-weight:bold;font-size:14px;color:var(--iw-dark)}
+    .price-label{color:var(--iw-gray);font-size:13px;min-width:0}
+    .price-amount{font-weight:bold;font-size:16px;color:var(--iw-dark)}
     .price-amount.usd{color:#1a6e40}
-    .price-unit{color:var(--iw-gray);font-size:11px}
+    .price-unit{color:var(--iw-gray);font-size:12px}
 
     .badge-history{display:inline-block;font-size:10px;background:#fff8dc;border:1px solid #c8a000;color:#7a5c00;border-radius:2px;padding:1px 5px;margin-left:4px;vertical-align:middle;white-space:nowrap}
 
@@ -259,32 +259,32 @@
 const DB = {
   "categories": [
     {
-      "id": "tech-bundle",
-      "name": "テクノロジー総合"
-    },
-    {
-      "id": "storage",
-      "name": "ストレージ"
-    },
-    {
       "id": "ai",
       "name": "AI"
     },
     {
-      "id": "business",
-      "name": "ビジネス"
+      "id": "cloud-storage",
+      "name": "ストレージ"
     },
     {
-      "id": "music",
-      "name": "音楽"
+      "id": "digital-member",
+      "name": "会員サービス"
     },
     {
       "id": "video",
-      "name": "動画"
+      "name": "動画配信"
+    },
+    {
+      "id": "music",
+      "name": "音楽配信"
     },
     {
       "id": "game",
-      "name": "ゲーム・その他"
+      "name": "ゲーム"
+    },
+    {
+      "id": "business",
+      "name": "業務・ビジネス"
     }
   ],
   "services": [
@@ -292,7 +292,7 @@ const DB = {
       "id": "apple-one",
       "name": "Apple One",
       "provider": "Apple",
-      "category": "tech-bundle",
+      "categories": ["digital-member"],
       "url": "https://www.apple.com/jp/apple-one/",
       "url_label": "Apple One詳細ページ",
       "description": "iCloud+のストレージとApple TV+、Apple Music、ゲームのApple Arcadeをセットにしたサブスクリプションプラン。個人はストレージが50GB、ファミリーは200GBで5人までで共有できる。",
@@ -357,7 +357,7 @@ const DB = {
       "id": "google-one",
       "name": "Google One",
       "provider": "Google",
-      "category": "tech-bundle",
+      "categories": ["cloud-storage"],
       "url": "https://one.google.com/about/plans",
       "url_label": "Google One詳細ページ",
       "description": "Googleドライブのストレージ容量を拡張できるサブスクリプションサービス。プレミアム（2TB）プランではGemini、NotebookLM、Veo 3.1などGoogleのAIサービスを多数利用できる。",
@@ -449,7 +449,7 @@ const DB = {
       "id": "amazon-prime",
       "name": "Amazonプライム",
       "provider": "Amazon",
-      "category": "tech-bundle",
+      "categories": ["digital-member"],
       "url": "https://www.amazon.co.jp/prime",
       "url_label": "Amazonプライム詳細ページ",
       "description": "配送特典（お急ぎ便・お届け日時指定便無料）に加え、Prime Video、Prime Music、Prime Gaming、Amazon Photos等が利用できる総合サブスクリプション。",
@@ -514,7 +514,7 @@ const DB = {
       "id": "icloud-plus",
       "name": "iCloud+",
       "provider": "Apple",
-      "category": "storage",
+      "categories": ["cloud-storage"],
       "url": "https://www.apple.com/jp/icloud/",
       "url_label": "iCloud+詳細ページ",
       "description": "AppleのクラウドストレージサービスiCloudの有料プラン。プライベートリレー、メールを非公開等のプライバシー機能も利用できる。",
@@ -576,7 +576,7 @@ const DB = {
       "id": "chatgpt",
       "name": "ChatGPT",
       "provider": "OpenAI",
-      "category": "ai",
+      "categories": ["ai"],
       "url": "https://chatgpt.com/ja-JP/pricing/",
       "url_label": "ChatGPT詳細ページ",
       "description": "OpenAIが提供するAIチャットサービス。無料（Free）のほか有料プランのGo・Plus・Proがある。GoおよびFreeプランでは広告が表示される。AIコーディングエージェント「Codex」はPlusおよびProで利用可能。",
@@ -638,7 +638,7 @@ const DB = {
       "id": "claude",
       "name": "Claude",
       "provider": "Anthropic",
-      "category": "ai",
+      "categories": ["ai"],
       "url": "https://claude.com/pricing",
       "url_label": "Claude詳細ページ",
       "description": "AnthropicのAIサービス「Claude」の有料プラン。無料プランより多くの会話量と、最新モデルへの優先アクセスを提供する。利用量に応じてPro、Max 5x、Max 20xが用意される。Pro以上のプランでAIコーディングツール「Claude Code」の利用が可能。",
@@ -700,7 +700,7 @@ const DB = {
       "id": "gemini",
       "name": "Gemini",
       "provider": "Google",
-      "category": "ai",
+      "categories": ["ai"],
       "url": "https://one.google.com/intl/ja_jp/about/google-ai-plans/",
       "url_label": "Gemini詳細ページ",
       "description": "GoogleのAIサービス「Gemini」の有料プラン。Google AI Plus・Pro・Ultraの3段階があり、ストレージ容量・Geminiモデルアクセスレベル・AIエージェント機能が異なる。上位プランほどGoogle CloudクレジットやYouTube Premiumなどの特典も付帯する。",
@@ -762,7 +762,7 @@ const DB = {
       "id": "spotify",
       "name": "Spotify プレミアム",
       "provider": "Spotify",
-      "category": "music",
+      "categories": ["music"],
       "url": "https://www.spotify.com/jp/premium/",
       "url_label": "Spotify プレミアム詳細ページ",
       "description": "スウェーデン発の音楽ストリーミングサービス。1億曲以上とポッドキャストが広告なしで聴き放題。ダウンロードによるオフライン再生にも対応。",
@@ -824,7 +824,7 @@ const DB = {
       "id": "apple-music",
       "name": "Apple Music",
       "provider": "Apple",
-      "category": "music",
+      "categories": ["music"],
       "url": "https://www.apple.com/jp/apple-music/",
       "url_label": "Apple Music詳細ページ",
       "description": "Appleの音楽ストリーミングサービス。1億曲以上がロスレス・ハイレゾ音質で聴き放題。空間オーディオ（Dolby Atmos）にも対応。",
@@ -869,7 +869,7 @@ const DB = {
       "id": "youtube-music",
       "name": "YouTube Music プレミアム",
       "provider": "Google",
-      "category": "music",
+      "categories": ["music"],
       "url": "https://music.youtube.com/",
       "url_label": "YouTube Music詳細ページ",
       "description": "Googleが提供する音楽ストリーミングサービス。YouTubeのMVを含む楽曲が聴き放題で、バックグラウンド再生やオフライン再生も可能。",
@@ -914,7 +914,7 @@ const DB = {
       "id": "amazon-music-unlimited",
       "name": "Amazon Music Unlimited",
       "provider": "Amazon",
-      "category": "music",
+      "categories": ["music"],
       "url": "https://www.amazon.co.jp/music/unlimited",
       "url_label": "Amazon Music Unlimited詳細ページ",
       "description": "Amazonの音楽ストリーミングサービス。1億曲以上が聴き放題で、Ultra HD・空間オーディオにも対応。プライム会員向け割引あり。",
@@ -976,7 +976,7 @@ const DB = {
       "id": "line-music",
       "name": "LINE MUSIC",
       "provider": "LINE",
-      "category": "music",
+      "categories": ["music"],
       "url": "https://music.line.me/",
       "url_label": "LINE MUSIC詳細ページ",
       "description": "LINEが提供する音楽ストリーミングサービス。LINEとの連携機能が特徴で、着信音や通話中BGMへの楽曲設定も可能。",
@@ -1021,7 +1021,7 @@ const DB = {
       "id": "netflix",
       "name": "Netflix",
       "provider": "Netflix",
-      "category": "video",
+      "categories": ["video"],
       "url": "https://www.netflix.com/jp/",
       "url_label": "Netflix詳細ページ",
       "description": "世界最大の動画ストリーミングサービス。オリジナルコンテンツを多数制作・配信。広告付きスタンダードプランから4K対応プレミアムプランまで選べる。",
@@ -1083,7 +1083,7 @@ const DB = {
       "id": "disney-plus",
       "name": "Disney+",
       "provider": "The Walt Disney Company",
-      "category": "video",
+      "categories": ["video"],
       "url": "https://www.disneyplus.com/ja-jp",
       "url_label": "Disney+詳細ページ",
       "description": "ディズニー、ピクサー、マーベル、スター・ウォーズ、ナショナルジオグラフィックのコンテンツを中心に配信。スター枠では多様なエンタメ作品も視聴可能。",
@@ -1145,7 +1145,7 @@ const DB = {
       "id": "youtube-premium",
       "name": "YouTube Premium",
       "provider": "Google",
-      "category": "video",
+      "categories": ["video"],
       "url": "https://www.youtube.com/premium",
       "url_label": "YouTube Premium詳細ページ",
       "description": "YouTubeの広告なし視聴、バックグラウンド再生、オフライン再生が可能な有料プラン。YouTube Music Premiumも同時に利用できる。",
@@ -1190,7 +1190,7 @@ const DB = {
       "id": "unext",
       "name": "U-NEXT",
       "provider": "U-NEXT",
-      "category": "video",
+      "categories": ["video"],
       "url": "https://video.unext.jp/",
       "url_label": "U-NEXT詳細ページ",
       "description": "国内最大級の動画配信サービス。映画・ドラマ・アニメ・漫画など31万本以上のコンテンツを配信。毎月1,200ポイントが付与され、最新作の購入にも使える。",
@@ -1218,7 +1218,7 @@ const DB = {
       "id": "hulu",
       "name": "Hulu",
       "provider": "HJホールディングス",
-      "category": "video",
+      "categories": ["video"],
       "url": "https://www.hulu.jp/",
       "url_label": "Hulu詳細ページ",
       "description": "日本テレビ傘下の動画配信サービス。日本テレビ系の人気ドラマ・バラエティが充実しており、海外ドラマも豊富に取り揃えている。",
@@ -1246,7 +1246,7 @@ const DB = {
       "id": "apple-tv-plus",
       "name": "Apple TV+",
       "provider": "Apple",
-      "category": "video",
+      "categories": ["video"],
       "url": "https://www.apple.com/jp/apple-tv-plus/",
       "url_label": "Apple TV+詳細ページ",
       "description": "Appleが制作するオリジナルコンテンツ専門の動画配信サービス。受賞歴のある作品を多数配信。",
@@ -1274,7 +1274,7 @@ const DB = {
       "id": "dazn",
       "name": "DAZN",
       "provider": "DAZN",
-      "category": "video",
+      "categories": ["video"],
       "url": "https://www.dazn.com/ja-JP/",
       "url_label": "DAZN詳細ページ",
       "description": "スポーツ専門の動画配信サービス。Jリーグ、プロ野球、ボクシングなど多様なスポーツを生配信。NTTドコモドコモやKDDI、ソフトバンクなどとのバンドルプランや、他の動画配信サービスと連携した割安プランなども展開している。\n主力プランのDAZNスタンダードのほか、DAZN SOCCER、DAZN BASEBALLといったスポーツを限定したプランや、一部のスポーツのみのDAZN Globalを用意。サッカーと野球は応援チームの専用プランも展開している。\n",
@@ -1383,7 +1383,7 @@ const DB = {
       "id": "d-anime-store",
       "name": "dアニメストア",
       "provider": "NTTドコモ",
-      "category": "video",
+      "categories": ["video"],
       "url": "https://animestore.docomo.ne.jp/",
       "url_label": "dアニメストア詳細ページ",
       "description": "NTTドコモが運営するアニメ専門の動画配信サービス。最新作から名作まで6,000タイトル以上を配信。",
@@ -1411,7 +1411,7 @@ const DB = {
       "id": "abema-premium",
       "name": "ABEMAプレミアム",
       "provider": "AbemaTV",
-      "category": "video",
+      "categories": ["video"],
       "url": "https://abema.tv/",
       "url_label": "ABEMAプレミアム詳細ページ",
       "description": "サイバーエージェントとテレビ朝日が共同運営する動画配信サービス「ABEMA」の有料プラン。オリジナルアニメ・ドラマ・スポーツの見逃し配信が可能。",
@@ -1439,7 +1439,7 @@ const DB = {
       "id": "lemino",
       "name": "Lemino",
       "provider": "NTTドコモ",
-      "category": "video",
+      "categories": ["video"],
       "url": "https://lemino.docomo.ne.jp/",
       "url_label": "Lemino詳細ページ",
       "description": "NTTドコモが2023年に開始した動画配信サービス。映画・ドラマ・スポーツ・アニメなどを配信し、一部コンテンツは無料で視聴可能。",
@@ -1467,7 +1467,7 @@ const DB = {
       "id": "fod",
       "name": "FOD",
       "provider": "フジテレビ",
-      "category": "video",
+      "categories": ["video"],
       "url": "https://fod.fujitv.co.jp/",
       "url_label": "FOD詳細ページ",
       "description": "フジテレビが運営する動画配信サービス。フジテレビ系の過去ドラマ・バラエティが充実しており、雑誌読み放題サービスも付帯。",
@@ -1495,7 +1495,7 @@ const DB = {
       "id": "dmm-tv",
       "name": "DMM TV",
       "provider": "DMM.com",
-      "category": "video",
+      "categories": ["video"],
       "url": "https://tv.dmm.com/",
       "url_label": "DMM TV詳細ページ",
       "description": "DMM.comが運営する動画配信サービス。アニメ・映画・ドラマを中心に配信し、DMMポイントとの連携も利用できる。",
@@ -1523,7 +1523,7 @@ const DB = {
       "id": "google-workspace",
       "name": "Google Workspace",
       "provider": "Google",
-      "category": "business",
+      "categories": ["business"],
       "url": "https://workspace.google.com/intl/ja/",
       "url_label": "Google Workspace詳細ページ",
       "description": "GoogleのビジネスSuiteサービス。Gmail、Google Drive、Meet、Docs等の業務ツールをひとつにまとめて提供。プランごとにストレージ容量や機能が異なる。",
@@ -1568,7 +1568,7 @@ const DB = {
       "id": "microsoft-365",
       "name": "Microsoft 365",
       "provider": "Microsoft",
-      "category": "business",
+      "categories": ["business"],
       "url": "https://www.microsoft.com/ja-jp/microsoft-365",
       "url_label": "Microsoft 365詳細ページ",
       "description": "MicrosoftのOffice Suiteサービス。Word、Excel、PowerPoint等のOfficeアプリと1TBのOneDriveストレージがセットになった定額サービス。",
@@ -1630,7 +1630,7 @@ const DB = {
       "id": "notion",
       "name": "Notion",
       "provider": "Notion Labs",
-      "category": "business",
+      "categories": ["business"],
       "url": "https://www.notion.com/ja/pricing",
       "url_label": "Notion詳細ページ",
       "description": "ノート・Wiki・プロジェクト管理・データベースが一体化したオールインワン生産性ツール。AI機能も搭載し、個人から大企業まで幅広く利用されている。",
@@ -1675,7 +1675,7 @@ const DB = {
       "id": "nintendo-switch-online",
       "name": "Nintendo Switch Online",
       "provider": "任天堂",
-      "category": "game",
+      "categories": ["game"],
       "url": "https://www.nintendo.com/jp/switch/online/",
       "url_label": "Nintendo Switch Online詳細ページ",
       "description": "Nintendo Switchのオンラインプレイに必須のサービス。ファミコン・スーパーファミコン・Nintendo 64等のクラシックゲームが遊び放題。",
@@ -1720,7 +1720,7 @@ const DB = {
       "id": "playstation-plus",
       "name": "PlayStation Plus",
       "provider": "ソニー・インタラクティブエンタテインメント",
-      "category": "game",
+      "categories": ["game"],
       "url": "https://www.playstation.com/ja-jp/ps-plus/",
       "url_label": "PlayStation Plus詳細ページ",
       "description": "PlayStation Network向けのサブスクリプションサービス。オンラインマルチプレイのほか、月替わりのフリープレイゲームや各種割引特典を提供。",
@@ -1782,7 +1782,7 @@ const DB = {
       "id": "xbox-game-pass",
       "name": "Xbox Game Pass",
       "provider": "Microsoft",
-      "category": "game",
+      "categories": ["game"],
       "url": "https://www.xbox.com/ja-JP/xbox-game-pass",
       "url_label": "Xbox Game Pass詳細ページ",
       "description": "Microsoftが提供するゲームサブスクリプションサービス。数百本のゲームが遊び放題で、コンソール・PC・クラウドで利用可能。",
@@ -1844,7 +1844,7 @@ const DB = {
       "id": "lyp-premium",
       "name": "LYPプレミアム",
       "provider": "LINEヤフー",
-      "category": "game",
+      "categories": ["digital-member"],
       "url": "https://premium.yahoo.co.jp/",
       "url_label": "LYPプレミアム詳細ページ",
       "description": "LINEヤフーが提供する会員サービス。Yahoo!ショッピングでのポイント還元率アップ、各種サービスの優待など多数の特典がある。",
@@ -1872,7 +1872,7 @@ const DB = {
       "id": "ponta-pass",
       "name": "Pontaパス",
       "provider": "au（KDDI）",
-      "category": "game",
+      "categories": ["digital-member"],
       "url": "https://pass.auone.jp/ponta/",
       "url_label": "Pontaパス詳細ページ",
       "description": "KDDIが提供するauユーザー向け優待サービス。Pontaポイントの付与率アップや、対象店舗でのクーポン特典が利用できる。",
@@ -2012,7 +2012,7 @@ historyFilter.addEventListener('change', e=>{ state.historyFilter = e.target.val
 // ===== 一覧レンダリング =====
 function filterServices(){
   let services = DB.services.slice();
-  if(state.category !== 'all') services = services.filter(s=>s.category===state.category);
+  if(state.category !== 'all') services = services.filter(s=>(s.categories||[]).includes(state.category));
   if(state.search){
     services = services.filter(s=>
       s.name.toLowerCase().includes(state.search) ||
@@ -2047,7 +2047,7 @@ function renderList(){
   // カテゴリ別表示
   const cats = state.category==='all' ? DB.categories : DB.categories.filter(c=>c.id===state.category);
   cats.forEach(cat=>{
-    const catServices = services.filter(s=>s.category===cat.id);
+    const catServices = services.filter(s=>(s.categories||[]).includes(cat.id));
     if(!catServices.length)return;
 
     const section=document.createElement('section');
@@ -2099,11 +2099,10 @@ function buildTable(services, showCat){
         <span class="price-amount${isUSD?' usd':''}">${fmtAmount(cur)}${taxNote}</span>
         <span class="price-unit">${fmtBilling(cur.billing)}</span>
         ${annualHtml}
-        ${hasHistoryEntry(plan)?'<span class="badge-history" aria-label="価格改定履歴あり">改定履歴あり</span>':''}
       </div>`;
     }).join('');
 
-    const catLabel = showCat ? `<div class="service-provider">${escapeHtml(categoryMap[svc.category]||'')}</div>` : '';
+    const catLabel = showCat ? `<div class="service-provider">${escapeHtml((svc.categories||[]).map(id=>categoryMap[id]).filter(Boolean).join(' / '))}</div>` : '';
     tr.innerHTML=`
       <td><div class="service-name">${escapeHtml(svc.name)}</div><div class="service-provider">${escapeHtml(svc.provider)}</div>${catLabel}</td>
       <td>${priceHtml}</td>
@@ -2208,7 +2207,7 @@ function openModal(id){
     <div class="modal-header">
       <div>
         <div class="modal-header__title">${escapeHtml(svc.name)}</div>
-        <div class="modal-header__sub">${escapeHtml(svc.provider)} &mdash; ${escapeHtml(categoryMap[svc.category]||'')}</div>
+        <div class="modal-header__sub">${escapeHtml(svc.provider)} &mdash; ${escapeHtml((svc.categories||[]).map(id=>categoryMap[id]).filter(Boolean).join(' / '))}</div>
       </div>
       <button class="modal-close" id="modalCloseBtn" aria-label="閉じる">&times;</button>
     </div>
