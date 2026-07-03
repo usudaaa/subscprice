@@ -77,7 +77,13 @@
 
     /* ===== 改定ニュース欄 ===== */
     .news-box{margin:14px 0 2px;border:1px solid var(--iw-border);border-radius:3px;background:#fff;overflow:hidden}
-    .news-box__head{font-size:13px;font-weight:bold;color:var(--iw-navy);padding:7px 12px;border-bottom:1px solid var(--iw-border);background:var(--iw-blue-light)}
+    .news-box__head{display:block;width:100%;text-align:left;border:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:bold;color:var(--iw-navy);padding:7px 12px;border-bottom:1px solid var(--iw-border);background:var(--iw-blue-light)}
+    .news-box.collapsed .news-box__head{background:#fff;border-bottom:none;font-weight:normal;color:var(--iw-gray);font-size:12px;padding:5px 12px}
+    .news-box.collapsed .news-box__head:hover{color:var(--iw-blue)}
+    .news-box.collapsed ul{display:none}
+    .news-arrow{font-size:10px;margin-left:6px}
+    .news-count{display:inline-block;background:var(--iw-navy);color:#fff;font-size:10px;border-radius:8px;padding:0 7px;margin-left:6px;font-weight:normal;vertical-align:middle}
+    .news-box.collapsed .news-count{background:#8896b8}
     .news-box ul{list-style:none;margin:0;padding:2px 0}
     .news-box li{display:flex;align-items:baseline;gap:8px;padding:6px 12px;font-size:13px;border-bottom:1px dashed #e4e9f4;flex-wrap:wrap}
     .news-box li:last-child{border-bottom:none}
@@ -288,8 +294,6 @@
     <label class="sr-only" for="searchInput">サービス検索</label>
     <input type="search" id="searchInput" class="toolbar__input" placeholder="🔍 サービス名・提供元で検索…" aria-label="サービス検索">
     <button type="button" class="toolbar__filter-btn" id="filterToggle" aria-expanded="false" aria-controls="toolbarOptions">⚙ 絞り込み</button>
-    <button type="button" class="toolbar__filter-btn" id="simToggle" aria-pressed="false" data-tip="気になるプランにチェックを入れると、月額・年額の合計金額をその場で計算できます。サイトにないサブスクの手動追加も可能">🧮 合計シミュレーター</button>
-    <div class="toolbar__count" id="resultCount"></div>
     <div class="toolbar__options" id="toolbarOptions" hidden>
       <div class="toolbar__group">
         <label for="sortSelect">並び順:</label>
@@ -308,6 +312,8 @@
         </select>
       </div>
     </div>
+    <button type="button" class="toolbar__filter-btn" id="simToggle" aria-pressed="false" data-tip="気になるプランにチェックを入れると、月額・年額の合計金額をその場で計算できます。サイトにないサブスクの手動追加も可能">🧮 合計シミュレーター</button>
+    <div class="toolbar__count" id="resultCount"></div>
   </div>
   <div id="serviceList" aria-live="polite"></div>
 </div>
@@ -938,11 +944,32 @@ function buildNews(){
   }).join('');
 
   const box = document.getElementById('newsBox');
-  box.innerHTML = `<div class="news-box__head">📰 最近の価格改定・新プラン（直近6カ月）</div><ul>${rows}</ul>`;
+  // 未読の改定があるときだけ自動展開（既読なら1行に折りたたみ）
+  const latest = top[0].date;
+  let seen = null;
+  try { seen = localStorage.getItem('spw_news_seen'); } catch(e){}
+  const expand = !seen || latest > seen;
+
+  box.innerHTML = `<button type="button" class="news-box__head" id="newsToggle" aria-expanded="${expand}">📰 最近の価格改定・新プラン<span class="news-count">${top.length}件</span><span class="news-arrow">${expand?'▾':'▸'}</span></button><ul>${rows}</ul>`;
+  box.classList.toggle('collapsed', !expand);
   box.style.display = 'block';
+  if(expand){
+    try { localStorage.setItem('spw_news_seen', latest); } catch(e){}
+  }
+
   box.addEventListener('click', e=>{
     const a = e.target.closest('.news-link');
-    if(a) openModal(a.dataset.id);
+    if(a){ openModal(a.dataset.id); return; }
+    const head = e.target.closest('#newsToggle');
+    if(head){
+      const nowCollapsed = !box.classList.contains('collapsed');
+      box.classList.toggle('collapsed', nowCollapsed);
+      head.setAttribute('aria-expanded', nowCollapsed ? 'false' : 'true');
+      head.querySelector('.news-arrow').textContent = nowCollapsed ? '▸' : '▾';
+      if(!nowCollapsed){
+        try { localStorage.setItem('spw_news_seen', latest); } catch(e){}
+      }
+    }
   });
 }
 
