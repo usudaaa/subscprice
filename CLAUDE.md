@@ -54,6 +54,9 @@
 - **ローカル確認**: `powershell -ExecutionPolicy Bypass -File serve.ps1`（ポート3000）→
   http://localhost:3000/ 。edit.htmlの「保存して反映」はserve.ps1経由でのみ動く（Pages上では動かない）
 - **公開反映**: `git push origin main` だけ。Actionsが自動デプロイ（1〜2分）
+- **デプロイ失敗時**: GitHub側の一時障害で「Deployment failed, try again later.」が断続的に出ることがある
+  （ビルドは成功しデプロイ工程だけ失敗するパターン）。空コミットをpushして再トリガーすれば通る。
+  ワークフローへの自動リトライは負荷を考慮して入れない方針
 - **db.jsonの一括編集**: PowerShellスクリプトで文字列置換する場合、**.ps1はUTF-8 BOM付きで保存**
   しないと日本語リテラルが壊れる（PowerShell 5.1）。編集後は `ConvertFrom-Json` で妥当性検証してから書き込む
 
