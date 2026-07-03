@@ -61,6 +61,17 @@
     /* ===== メインレイアウト ===== */
     .main-wrap{max-width:980px;margin:0 auto;padding:0 12px}
 
+    /* ===== 改定ニュース欄 ===== */
+    .news-box{margin:14px 0 2px;border:1px solid var(--iw-border);border-radius:3px;background:#fff;overflow:hidden}
+    .news-box__head{font-size:13px;font-weight:bold;color:var(--iw-navy);padding:7px 12px;border-bottom:1px solid var(--iw-border);background:var(--iw-blue-light)}
+    .news-box ul{list-style:none;margin:0;padding:2px 0}
+    .news-box li{display:flex;align-items:baseline;gap:8px;padding:6px 12px;font-size:13px;border-bottom:1px dashed #e4e9f4;flex-wrap:wrap}
+    .news-box li:last-child{border-bottom:none}
+    .news-date{color:#888;font-size:11px;white-space:nowrap;min-width:64px}
+    .badge-new{display:inline-block;background:#e8f0fb;border:1px solid var(--iw-blue);color:var(--iw-blue);font-size:10px;border-radius:2px;padding:1px 5px;font-weight:normal;vertical-align:middle;white-space:nowrap}
+    .news-link{color:var(--iw-link);cursor:pointer;text-decoration:none;font-weight:bold}
+    .news-link:hover{text-decoration:underline;color:var(--iw-link-hover)}
+
     /* ===== カテゴリナビ ===== */
     .cat-nav{display:flex;gap:4px;flex-wrap:wrap;padding:12px 0 10px;border-bottom:1px solid var(--iw-border);margin-bottom:0}
     .cat-nav__btn{background:#fff;border:1px solid #b0bcd8;border-radius:3px;padding:4px 12px;font-size:12px;cursor:pointer;color:var(--iw-dark);transition:all .15s;white-space:nowrap;font-family:inherit}
@@ -255,6 +266,7 @@
 </div>
 
 <div class="main-wrap">
+  <div class="news-box" id="newsBox" style="display:none"></div>
   <nav class="cat-nav" id="catNav" aria-label="カテゴリ"></nav>
   <div class="toolbar" role="search">
     <label class="sr-only" for="searchInput">サービス検索</label>
@@ -731,6 +743,65 @@ function closeModal(){
   document.body.style.overflow='';
 }
 
+// ===== 改定ニュース欄（price_historyから自動生成） =====
+function buildNews(){
+  const cutoff = new Date();
+  cutoff.setMonth(cutoff.getMonth() - 6);
+  const cutoffStr = cutoff.toISOString().slice(0,10);
+  const items = [];
+
+  DB.services.forEach(svc=>{
+    svc.plans.forEach(plan=>{
+      const sorted = [...plan.price_history].sort((a,b)=>String(a.valid_from||'').localeCompare(String(b.valid_from||'')));
+      sorted.forEach((e,i)=>{
+        if(!e.valid_from || e.valid_from < cutoffStr || !e.amount) return;
+        const prev = i > 0 ? sorted[i-1] : null;
+        if(!prev){
+          items.push({date:e.valid_from, svc, plan, type:'new', cur:e});
+        } else if(prev.currency===e.currency && prev.billing===e.billing){
+          if(e.amount > prev.amount) items.push({date:e.valid_from, svc, plan, type:'up', prev, cur:e});
+          else if(e.amount < prev.amount) items.push({date:e.valid_from, svc, plan, type:'down', prev, cur:e});
+        } else {
+          // 通貨・支払い単位の変更（ドル建て→円建てなど）
+          items.push({date:e.valid_from, svc, plan, type:'changed', prev, cur:e});
+        }
+      });
+    });
+  });
+
+  items.sort((a,b)=>b.date.localeCompare(a.date));
+  const top = items.slice(0,8);
+  if(!top.length) return;  // ニュースがなければ枠ごと非表示のまま
+
+  const fmtA = (a,c)=> c==='USD' ? a.toLocaleString()+' USドル' : a.toLocaleString()+'円';
+  const fmtD = s=>{ const d=new Date(s); return d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate(); };
+
+  const rows = top.map(it=>{
+    const badge = it.type==='up'   ? '<span class="badge-up">値上げ</span>'
+                : it.type==='down' ? '<span class="badge-down">値下げ</span>'
+                : it.type==='new'  ? '<span class="badge-new">新プラン</span>'
+                :                    '<span class="badge-new">改定</span>';
+    const label = `<a class="news-link" data-id="${it.svc.id}">${escapeHtml(it.svc.name)}</a> ${escapeHtml(it.plan.name)}`;
+    let text;
+    if(it.type==='new'){
+      text = `${label} が登場 — ${fmtA(it.cur.amount,it.cur.currency)}${fmtBilling(it.cur.billing)}`;
+    } else if(it.type==='changed'){
+      text = `${label} — ${fmtA(it.cur.amount,it.cur.currency)}${fmtBilling(it.cur.billing)}に${it.cur.note?`（${escapeHtml(it.cur.note)}）`:''}`;
+    } else {
+      text = `${label} — ${fmtA(it.prev.amount,it.prev.currency)} → <b>${fmtA(it.cur.amount,it.cur.currency)}</b>${fmtBilling(it.cur.billing)}`;
+    }
+    return `<li><span class="news-date">${fmtD(it.date)}</span>${badge}<span>${text}</span></li>`;
+  }).join('');
+
+  const box = document.getElementById('newsBox');
+  box.innerHTML = `<div class="news-box__head">📰 最近の価格改定・新プラン（直近6カ月）</div><ul>${rows}</ul>`;
+  box.style.display = 'block';
+  box.addEventListener('click', e=>{
+    const a = e.target.closest('.news-link');
+    if(a) openModal(a.dataset.id);
+  });
+}
+
 // ===== 起動：データ読み込み =====
 fetch('data/db.json')
   .then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
@@ -742,6 +813,7 @@ fetch('data/db.json')
       document.getElementById('pageUpdated').textContent = `最終更新：${y}年${m}月${d}日`;
     }
     buildCatNav();
+    buildNews();
     renderList();
   })
   .catch(err=>{
