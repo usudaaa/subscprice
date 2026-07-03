@@ -177,6 +177,21 @@
       .site-header__inner{flex-wrap:wrap;height:auto;padding:8px 12px}
     }
 
+    /* スマホ：テーブルをカード型に */
+    @media(max-width:640px){
+      .service-table colgroup{display:none}
+      .service-table thead{display:none}
+      .service-table,.service-table tbody{display:block}
+      .service-table tr{display:block;padding:12px;border-bottom:1px solid var(--iw-border)}
+      .service-table tr:last-child{border-bottom:none}
+      .service-table td{display:block;border:none;padding:0}
+      .service-table td+td{margin-top:8px}
+      .service-table tr:hover td{background:none}
+      .service-name{font-size:16px}
+      .price-row{gap:2px 8px;margin-bottom:4px}
+      .btn-detail{display:block;width:100%;text-align:center;padding:9px;font-size:13px;white-space:nowrap}
+    }
+
     /* ===== 印刷用 ===== */
     @media print{
       body{font-size:11pt;color:#000;background:#fff}
@@ -217,6 +232,7 @@
   <div class="page-header__inner">
     <h1 class="page-header__title">サブスクリプション価格ウォッチ</h1>
     <p class="page-header__lead">主要テクノロジー系サブスクリプションサービスの現在価格と価格改定履歴をまとめています。<br>価格は税込・月額を基本とし、ドル建てサービスはUSドル(税別)表記です。</p>
+    <p class="page-header__updated" id="pageUpdated"></p>
   </div>
 </div>
 
@@ -320,6 +336,25 @@ function getMinCurrentPrice(svc){
 }
 function svcHasHistory(svc){
   return svc.plans.some(p=>hasHistoryEntry(p));
+}
+
+// 直近12カ月以内の価格改定を検出（一覧バッジ用）
+function recentChange(svc){
+  const cutoff = new Date();
+  cutoff.setFullYear(cutoff.getFullYear()-1);
+  const cutoffStr = cutoff.toISOString().slice(0,10);
+  let up=false, down=false;
+  svc.plans.forEach(plan=>{
+    const cur = getCurrentPrice(plan);
+    if(!cur || !cur.valid_from || cur.valid_from < cutoffStr) return;
+    const prev = plan.price_history
+      .filter(p=>p!==cur && p.valid_from < cur.valid_from && p.currency===cur.currency && p.billing===cur.billing)
+      .sort((a,b)=>b.valid_from.localeCompare(a.valid_from))[0];
+    if(!prev) return;
+    if(cur.amount > prev.amount) up=true;
+    else if(cur.amount < prev.amount) down=true;
+  });
+  return {up, down};
 }
 function escapeHtml(s){
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -469,8 +504,10 @@ function buildTable(services, showCat){
     }).join('');
 
     const catLabel = showCat ? `<div class="service-provider">${escapeHtml((svc.categories||[]).map(id=>categoryMap[id]).filter(Boolean).join(' / '))}</div>` : '';
+    const chg = recentChange(svc);
+    const chgBadges = (chg.up?'<span class="badge-up">値上げ</span>':'') + (chg.down?'<span class="badge-down">値下げ</span>':'');
     tr.innerHTML=`
-      <td><div class="service-name">${escapeHtml(svc.name)}</div><div class="service-provider">${escapeHtml(svc.provider)}</div>${catLabel}</td>
+      <td><div class="service-name">${escapeHtml(svc.name)}${chgBadges}</div><div class="service-provider">${escapeHtml(svc.provider)}</div>${catLabel}</td>
       <td>${priceHtml}</td>
       <td><button class="btn-detail" data-id="${svc.id}" aria-label="${escapeHtml(svc.name)}の詳細と価格推移を見る">詳細・推移 ›</button></td>`;
     tbody.appendChild(tr);
@@ -603,6 +640,10 @@ fetch('data/db.json')
   .then(db=>{
     DB = db;
     categoryMap = Object.fromEntries(DB.categories.map(c=>[c.id,c.name]));
+    if(DB.last_updated){
+      const [y,m,d] = DB.last_updated.split('-').map(Number);
+      document.getElementById('pageUpdated').textContent = `最終更新：${y}年${m}月${d}日`;
+    }
     buildCatNav();
     renderList();
   })

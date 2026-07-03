@@ -485,6 +485,7 @@ async function saveToIndex() {
   status.className = '';
   status.textContent = '';
   try {
+    DB.last_updated = today();
     const res = await fetch('/save', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
