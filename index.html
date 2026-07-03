@@ -120,6 +120,7 @@
     /* 価格履歴テーブル */
     .plan-block{margin-bottom:20px}
     .plan-name{font-size:13px;font-weight:bold;color:var(--iw-navy);padding:5px 10px;background:var(--iw-blue-light);border-left:3px solid var(--iw-navy);margin-bottom:6px}
+    .plan-annual{font-size:11px;color:#888;margin:-2px 0 8px;padding-left:2px}
     .plan-desc{font-size:12px;color:var(--iw-gray)}
 
     .history-table{width:100%;border-collapse:collapse;font-size:13px}
@@ -342,11 +343,22 @@ function toJpyAnnual(p){
   let monthly = p.currency==='USD' ? p.amount*USD_TO_JPY : p.amount;
   return p.billing==='annual' ? p.amount * (p.currency==='USD'?USD_TO_JPY:1) : monthly*12;
 }
-function fmtAnnual(p){
+// 一覧用：年払いプランのみ月額相当を表示（月額プランの年換算は詳細モーダルへ）
+function fmtMonthlyEquiv(p){
+  if(!p||p.amount===0||p.billing!=='annual'||p.currency!=='JPY') return '';
+  const monthly = Math.round(p.amount/12);
+  return `<span class="price-annual">(月${monthly.toLocaleString()}円相当)</span>`;
+}
+// 詳細モーダル用：年額換算の注記
+function fmtAnnualNote(p){
   if(!p||p.amount===0) return '';
-  const yearly = toJpyAnnual(p);
-  const text = '年' + yearly.toLocaleString() + '円相当';
-  return `<span class="price-annual">(${text})</span>`;
+  if(p.billing==='annual'){
+    return `月額換算：約${Math.round(p.amount/12).toLocaleString()}円（編集部算出）`;
+  }
+  if(p.currency==='USD'){
+    return `年額換算：約${toJpyAnnual(p).toLocaleString()}円（1ドル=${USD_TO_JPY}円で編集部算出）`;
+  }
+  return `年額換算：${toJpyAnnual(p).toLocaleString()}円（編集部算出）`;
 }
 function getMinCurrentPrice(svc){
   // ソート用：そのサービスの最安現在価格（年額換算）
@@ -550,7 +562,7 @@ function buildTable(services, showCat){
       if(!cur)return '';
       const isUSD=cur.currency==='USD';
       const taxNote=fmtTax(cur);
-      const annualHtml = (cur.amount>0) ? fmtAnnual(cur) : '';
+      const annualHtml = fmtMonthlyEquiv(cur);
       return `<div class="price-row">
         <span class="price-label${bigLabel?' large':''}">${escapeHtml(plan.name)}</span>
         <span class="price-amount${isUSD?' usd':''}">${fmtAmount(cur)}</span>
@@ -679,8 +691,10 @@ function openModal(id){
 
     const nameDesc=plan.name+(plan.description?' — '+plan.description:'');
     const chart = buildPriceChart(plan);
+    const annualNote = fmtAnnualNote(getCurrentPrice(plan));
     plansHtml+=`<div class="plan-block">
       <div class="plan-name">${escapeHtml(nameDesc)}</div>
+      ${annualNote?`<div class="plan-annual">${annualNote}</div>`:''}
       ${chart}
       <table class="history-table">
         <thead><tr>
