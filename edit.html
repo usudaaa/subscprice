@@ -158,6 +158,45 @@
   </div>
 </div>
 
+<!-- 価格改定モーダル -->
+<div class="copy-modal" id="reviseModal">
+  <div class="copy-modal__box" style="max-width:500px">
+    <div class="copy-modal__head">
+      <h2>💴 価格改定を記録</h2>
+      <button class="btn btn-ghost btn-sm" onclick="closeReviseModal()">✕ 閉じる</button>
+    </div>
+    <div class="copy-modal__body">
+      <div id="reviseInfo" style="font-size:12px;color:#555;margin-bottom:12px;background:#f4f7fc;border:1px solid var(--border);border-radius:3px;padding:8px 10px"></div>
+      <div class="field-row">
+        <div class="field">
+          <label>改定日（新価格の適用開始日）</label>
+          <input type="date" id="rev_date">
+        </div>
+        <div class="field">
+          <label>新価格</label>
+          <input type="number" id="rev_amount" placeholder="例: 1980">
+        </div>
+      </div>
+      <div class="field-row full">
+        <div class="field">
+          <label>出典URL（公式サイト or Impress Watchシリーズ）</label>
+          <input id="rev_source" placeholder="https://">
+        </div>
+      </div>
+      <div class="field-row full">
+        <div class="field">
+          <label>備考</label>
+          <input id="rev_note" value="価格改定">
+        </div>
+      </div>
+      <div class="copy-modal__actions">
+        <button class="btn btn-ghost" style="background:#888;color:#fff" onclick="closeReviseModal()">キャンセル</button>
+        <button class="btn btn-green" onclick="applyRevision()">旧価格を閉じて新価格を追加</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 // ===== データはdata/db.jsonから読み込み =====
 let DB = null;
@@ -243,8 +282,10 @@ function renderEditor(svc) {
 }
 
 function renderPlan(plan, pi, total) {
-  const historyHtml = [...plan.price_history]
-    .sort((a, b) => new Date(b.valid_from) - new Date(a.valid_from))
+  // データ本体を新しい順に正規化してから描画する
+  // （表示だけソートすると、保存時にIDとデータの対応がずれて値が入れ違うため）
+  plan.price_history.sort((a, b) => String(b.valid_from||'').localeCompare(String(a.valid_from||'')));
+  const historyHtml = plan.price_history
     .map((h, hi) => renderHistoryEntry(h, pi, hi))
     .join('');
 
@@ -264,7 +305,8 @@ function renderPlan(plan, pi, total) {
         </div>
         <div style="font-size:12px;font-weight:bold;color:var(--navy);margin-bottom:8px">価格履歴</div>
         <div id="history_${pi}">${historyHtml}</div>
-        <button class="btn btn-blue btn-sm" onclick="addHistory(${pi})" style="margin-top:4px">＋ 価格履歴を追加（値上げ・値下げ時）</button>
+        <button class="btn btn-green btn-sm" onclick="openReviseModal(${pi})" style="margin-top:4px">💴 価格改定を記録</button>
+        <button class="btn btn-blue btn-sm" onclick="addHistory(${pi})" style="margin-top:4px">＋ 履歴を手動追加</button>
       </div>
     </div>`;
 }
@@ -414,6 +456,84 @@ function deleteHistory(pi, hi) {
   const svc = DB.services.find(s => s.id === currentServiceId);
   svc.plans[pi].price_history.splice(hi, 1);
   renderEditor(svc);
+}
+
+// ===== 価格改定フロー（旧価格を閉じる＋新価格を追加をワンセットで） =====
+let revisePi = null;
+
+function getCurrentEntry(plan){
+  return plan.price_history
+    .filter(h => h.valid_to === null)
+    .sort((a,b) => String(b.valid_from||'').localeCompare(String(a.valid_from||'')))[0] || null;
+}
+
+function openReviseModal(pi){
+  saveService();  // フォームの未保存値を先に取り込む
+  const svc = DB.services.find(s => s.id === currentServiceId);
+  const plan = svc.plans[pi];
+  const cur = getCurrentEntry(plan);
+  if (!cur) { alert('現在価格のエントリがありません。「＋ 履歴を手動追加」を使ってください。'); return; }
+  revisePi = pi;
+  const unit = cur.currency === 'USD' ? 'USドル' : '円';
+  const billing = cur.billing === 'annual' ? '年' : '月';
+  document.getElementById('reviseInfo').innerHTML =
+    `<b>${esc(plan.name)}</b>　現在: ${cur.amount.toLocaleString()} ${unit}/${billing}（${cur.tax_included ? '税込' : '税別'}、${esc(cur.valid_from||'?')}〜）<br>` +
+    `通貨・支払い単位・税区分は現在価格から引き継ぎます。旧価格の適用終了日は自動で「改定日の前日」になります。`;
+  document.getElementById('rev_date').value = today();
+  document.getElementById('rev_amount').value = '';
+  document.getElementById('rev_source').value = '';
+  document.getElementById('rev_note').value = '価格改定';
+  document.getElementById('reviseModal').classList.add('open');
+}
+
+function closeReviseModal(){
+  document.getElementById('reviseModal').classList.remove('open');
+}
+
+function applyRevision(){
+  const svc = DB.services.find(s => s.id === currentServiceId);
+  const plan = svc.plans[revisePi];
+  const date   = document.getElementById('rev_date').value;
+  const amount = Number(document.getElementById('rev_amount').value);
+  const source = document.getElementById('rev_source').value.trim();
+  const note   = document.getElementById('rev_note').value.trim();
+
+  if (!date) { alert('改定日を入力してください'); return; }
+  if (!amount || amount <= 0) { alert('新価格を入力してください'); return; }
+  const cur = getCurrentEntry(plan);
+  if (cur.valid_from && date <= cur.valid_from) {
+    alert('改定日は現在価格の適用開始日（' + cur.valid_from + '）より後の日付にしてください');
+    return;
+  }
+  if (amount === cur.amount) {
+    if (!confirm('新価格が現在価格と同じです。このまま記録しますか？')) return;
+  }
+  if (!source) {
+    if (!confirm('出典URLが未入力です。あとで必ず補完してください。このまま記録しますか？')) return;
+  }
+
+  // 旧価格を改定日の前日で閉じる
+  const prev = new Date(date + 'T00:00:00Z');
+  prev.setUTCDate(prev.getUTCDate() - 1);
+  const prevStr = prev.toISOString().slice(0, 10);
+  plan.price_history.forEach(h => { if (h.valid_to === null) h.valid_to = prevStr; });
+
+  // 新価格を追加（通貨・支払い単位・税区分は現在価格から引き継ぎ）
+  plan.price_history.push({
+    amount,
+    currency: cur.currency,
+    billing: cur.billing,
+    tax_included: cur.tax_included,
+    valid_from: date,
+    valid_to: null,
+    source,
+    note
+  });
+
+  closeReviseModal();
+  renderEditor(svc);
+  const notice = document.getElementById('saveNotice');
+  if (notice) { notice.classList.add('show'); setTimeout(() => notice.classList.remove('show'), 2500); }
 }
 
 // ===== 新規サービス追加 =====
