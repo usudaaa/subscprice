@@ -63,6 +63,7 @@
 
     /* ===== 合計シミュレーター ===== */
     .sim-check{width:16px;height:16px;accent-color:var(--iw-navy);margin-right:2px;cursor:pointer;flex-shrink:0;align-self:center}
+    body:not(.sim-mode) .sim-check{display:none}
     .sim-bar{position:fixed;left:0;right:0;bottom:0;background:var(--iw-navy);color:#fff;z-index:90;box-shadow:0 -2px 10px rgba(0,0,64,.35);display:none}
     .sim-bar.show{display:block}
     .sim-bar__inner{max-width:980px;margin:0 auto;padding:10px 12px;display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;font-size:13px}
@@ -285,6 +286,7 @@
     <label class="sr-only" for="searchInput">サービス検索</label>
     <input type="search" id="searchInput" class="toolbar__input" placeholder="🔍 サービス名・提供元で検索…" aria-label="サービス検索">
     <button type="button" class="toolbar__filter-btn" id="filterToggle" aria-expanded="false" aria-controls="toolbarOptions">⚙ 絞り込み</button>
+    <button type="button" class="toolbar__filter-btn" id="simToggle" aria-pressed="false">🧮 合計シミュレーター</button>
     <div class="toolbar__count" id="resultCount"></div>
     <div class="toolbar__options" id="toolbarOptions" hidden>
       <div class="toolbar__group">
@@ -764,7 +766,7 @@ function closeModal(){
 }
 
 // ===== 合計シミュレーター =====
-const sim = { selected: new Set(), custom: [] };
+const sim = { mode: false, selected: new Set(), custom: [] };
 let simPlanMap = {};  // plan.id → {svc, plan}
 
 function simLoad(){
@@ -772,12 +774,22 @@ function simLoad(){
     const raw = localStorage.getItem('spw_sim');
     if(!raw) return;
     const d = JSON.parse(raw);
+    sim.mode = !!d.mode;
     (d.ids||[]).forEach(id=>{ if(simPlanMap[id]) sim.selected.add(id); });
     sim.custom = (d.custom||[]).filter(c=>c && c.name && c.amount>0);
   } catch(e){}
 }
 function simSave(){
-  try { localStorage.setItem('spw_sim', JSON.stringify({ids:[...sim.selected], custom:sim.custom})); } catch(e){}
+  try { localStorage.setItem('spw_sim', JSON.stringify({mode:sim.mode, ids:[...sim.selected], custom:sim.custom})); } catch(e){}
+}
+
+function setSimMode(on){
+  sim.mode = on;
+  document.body.classList.toggle('sim-mode', on);
+  const btn = document.getElementById('simToggle');
+  btn.classList.toggle('active', on);
+  btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  updateSimBar();
 }
 
 function simTotals(){
@@ -800,27 +812,39 @@ function updateSimBar(){
   const bar = document.getElementById('simBar');
   const t = simTotals();
   simSave();
-  if(!t.count){
+  if(!sim.mode){
     bar.classList.remove('show');
     document.body.classList.remove('sim-open');
     return;
   }
   const fm = n=>n.toLocaleString();
-  const mParts=[]; if(t.mJPY) mParts.push(fm(t.mJPY)+'円'); if(t.mUSD) mParts.push(fm(t.mUSD)+' USドル');
-  const yParts=[]; if(t.yJPY) yParts.push(fm(t.yJPY)+'円'); if(t.yUSD) yParts.push(fm(t.yUSD)+' USドル');
-  const chips = sim.custom.map((c,i)=>
-    `<span class="sim-chip">${escapeHtml(c.name)} ${fm(c.amount)}円<button data-ci="${i}" aria-label="${escapeHtml(c.name)}を削除">✕</button></span>`
-  ).join('');
-  document.getElementById('simBarInner').innerHTML = `
-    <span>🧮 ${t.count}件選択中</span>
-    <span class="sim-bar__total">月 ${mParts.join(' + ')||'0円'} <small>／ 年 ${yParts.join(' + ')||'0円'}</small></span>
-    ${chips}
-    <span style="flex:1"></span>
-    <button class="sim-bar__btn" id="simAddCustom">＋その他を追加</button>
-    <button class="sim-bar__btn" id="simClear">クリア</button>`;
+  let body;
+  if(!t.count){
+    body = `<span>🧮 一覧のプランにチェックを入れると合計金額を計算します</span>
+      <span style="flex:1"></span>
+      <button class="sim-bar__btn" id="simAddCustom">＋その他を追加</button>
+      <button class="sim-bar__btn" id="simExit">✕ 閉じる</button>`;
+  } else {
+    const mParts=[]; if(t.mJPY) mParts.push(fm(t.mJPY)+'円'); if(t.mUSD) mParts.push(fm(t.mUSD)+' USドル');
+    const yParts=[]; if(t.yJPY) yParts.push(fm(t.yJPY)+'円'); if(t.yUSD) yParts.push(fm(t.yUSD)+' USドル');
+    const chips = sim.custom.map((c,i)=>
+      `<span class="sim-chip">${escapeHtml(c.name)} ${fm(c.amount)}円<button data-ci="${i}" aria-label="${escapeHtml(c.name)}を削除">✕</button></span>`
+    ).join('');
+    body = `<span>🧮 ${t.count}件選択中</span>
+      <span class="sim-bar__total">月 ${mParts.join(' + ')||'0円'} <small>／ 年 ${yParts.join(' + ')||'0円'}</small></span>
+      ${chips}
+      <span style="flex:1"></span>
+      <button class="sim-bar__btn" id="simAddCustom">＋その他を追加</button>
+      <button class="sim-bar__btn" id="simClear">クリア</button>
+      <button class="sim-bar__btn" id="simExit">✕ 閉じる</button>`;
+  }
+  document.getElementById('simBarInner').innerHTML = body;
   bar.classList.add('show');
   document.body.classList.add('sim-open');
 }
+
+// モード切り替えボタン
+document.getElementById('simToggle').addEventListener('click', ()=>setSimMode(!sim.mode));
 
 // チェックボックス（一覧内・再描画されるためデリゲート）
 document.getElementById('serviceList').addEventListener('change', e=>{
@@ -833,6 +857,10 @@ document.getElementById('serviceList').addEventListener('change', e=>{
 
 // バー内ボタン（デリゲート）
 document.getElementById('simBar').addEventListener('click', e=>{
+  if(e.target.id === 'simExit'){
+    setSimMode(false);
+    return;
+  }
   if(e.target.id === 'simClear'){
     sim.selected.clear();
     sim.custom = [];
@@ -931,7 +959,7 @@ fetch('data/db.json')
     buildCatNav();
     buildNews();
     renderList();
-    updateSimBar();
+    setSimMode(sim.mode);
   })
   .catch(err=>{
     document.getElementById('serviceList').innerHTML =
