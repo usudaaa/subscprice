@@ -45,6 +45,13 @@
     .site-header__breadcrumb a{color:rgba(255,255,255,.85);text-decoration:none}
     .site-header__breadcrumb a:hover{color:#fff}
 
+    /* ===== グローバルナビ（Impress Watch共通カテゴリ） ===== */
+    .global-nav{background:#fff;border-bottom:1px solid var(--iw-border)}
+    .global-nav__inner{max-width:980px;margin:0 auto;padding:0 12px;display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .global-nav__inner a{display:block;padding:9px 18px;font-size:13px;font-weight:bold;color:var(--iw-dark);text-decoration:none;white-space:nowrap;border-left:1px solid var(--iw-border)}
+    .global-nav__inner a:last-child{border-right:1px solid var(--iw-border)}
+    .global-nav__inner a:hover{color:var(--iw-blue);background:var(--iw-blue-light)}
+
     /* ===== ページヘッダー ===== */
     .page-header{background:var(--iw-blue-light);border-bottom:2px solid var(--iw-navy);padding:18px 0 14px}
     .page-header__inner{max-width:980px;margin:0 auto;padding:0 12px}
@@ -168,8 +175,13 @@
     .source-link a:hover{text-decoration:underline}
 
     /* ===== フッター ===== */
-    .site-footer{background:#1a1a2e;color:#aaa;text-align:center;font-size:11px;padding:20px 12px;margin-top:40px}
-    .site-footer__note{margin-top:8px;font-size:11px;color:#666}
+    .site-footer{background:#1a1a2e;color:#aaa;text-align:center;font-size:11px;padding:22px 12px;margin-top:40px}
+    .site-footer__links{display:flex;justify-content:center;flex-wrap:wrap;gap:0 4px;margin-bottom:12px}
+    .site-footer__links a{color:#ccc;text-decoration:none;font-size:12px;padding:2px 10px;border-right:1px solid #444}
+    .site-footer__links a:last-child{border-right:none}
+    .site-footer__links a:hover{color:#fff;text-decoration:underline}
+    .site-footer__note{margin-bottom:10px;font-size:11px;color:#777}
+    .site-footer__copy{color:#999}
 
     /* ===== ツールバー（検索・ソート） ===== */
     .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--iw-border);background:#fafbfd}
@@ -273,6 +285,17 @@
       <a href="https://www.watch.impress.co.jp/">Home</a> &rsaquo; サブスク料金ナビ
     </div>
   </div>
+  <nav class="global-nav" aria-label="Impress Watchカテゴリ">
+    <div class="global-nav__inner">
+      <a href="https://www.watch.impress.co.jp/category/tech/">テック</a>
+      <a href="https://www.watch.impress.co.jp/category/business/">ビジネス</a>
+      <a href="https://www.watch.impress.co.jp/category/life/">ライフ</a>
+      <a href="https://www.watch.impress.co.jp/category/enta/">エンタメ</a>
+      <a href="https://www.watch.impress.co.jp/category/money/">マネー</a>
+      <a href="https://www.watch.impress.co.jp/category/society/">社会</a>
+      <a href="https://www.watch.impress.co.jp/category/event/">イベント</a>
+    </div>
+  </nav>
 </header>
 
 <div class="page-header">
@@ -330,8 +353,15 @@
 </div>
 
 <footer class="site-footer">
-  <div>Copyright &copy; 2024 Impress Corporation. All Rights Reserved.</div>
+  <div class="site-footer__links">
+    <a href="https://www.impress.co.jp/company/" target="_blank" rel="noopener">会社概要</a>
+    <a href="https://www.impress.co.jp/ad/" target="_blank" rel="noopener">広告掲載について</a>
+    <a href="https://www.impress.co.jp/rule/" target="_blank" rel="noopener">利用規約</a>
+    <a href="https://www.impress.co.jp/privacy/" target="_blank" rel="noopener">プライバシーについて</a>
+    <a href="https://www.watch.impress.co.jp/" target="_blank" rel="noopener">お問い合わせ</a>
+  </div>
   <div class="site-footer__note">掲載価格は編集部確認時点の情報です。最新情報は各サービスの公式サイトをご確認ください。</div>
+  <div class="site-footer__copy">Copyright &copy;2018 Impress Corporation. All rights reserved.</div>
 </footer>
 
 <script>
