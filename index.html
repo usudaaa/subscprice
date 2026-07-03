@@ -171,6 +171,8 @@
     .toolbar__select{font-family:inherit;font-size:12px;padding:4px 8px;border:1px solid #b0bcd8;border-radius:3px;background:#fff;color:var(--iw-dark);cursor:pointer}
     .toolbar__count{margin-left:auto;font-size:11px;color:#888}
     .toolbar__filter-btn{font-family:inherit;font-size:12px;padding:5px 12px;border:1px solid #b0bcd8;border-radius:3px;background:#fff;color:var(--iw-dark);cursor:pointer;white-space:nowrap}
+    .toolbar__filter-btn[data-tip]{position:relative}
+    .toolbar__filter-btn[data-tip]:hover::after{content:attr(data-tip);position:absolute;left:0;top:calc(100% + 6px);z-index:60;background:var(--iw-dark);color:#fff;font-size:11px;line-height:1.6;padding:7px 10px;border-radius:3px;width:max-content;max-width:280px;white-space:normal;text-align:left;box-shadow:0 2px 10px rgba(0,0,0,.3);pointer-events:none}
     .toolbar__filter-btn:hover{border-color:var(--iw-blue);color:var(--iw-blue)}
     .toolbar__filter-btn.active{background:var(--iw-blue-light);border-color:var(--iw-blue);color:var(--iw-blue)}
     .toolbar__options{flex-basis:100%;display:flex;gap:14px;flex-wrap:wrap;padding:2px 0}
@@ -286,7 +288,7 @@
     <label class="sr-only" for="searchInput">サービス検索</label>
     <input type="search" id="searchInput" class="toolbar__input" placeholder="🔍 サービス名・提供元で検索…" aria-label="サービス検索">
     <button type="button" class="toolbar__filter-btn" id="filterToggle" aria-expanded="false" aria-controls="toolbarOptions">⚙ 絞り込み</button>
-    <button type="button" class="toolbar__filter-btn" id="simToggle" aria-pressed="false">🧮 合計シミュレーター</button>
+    <button type="button" class="toolbar__filter-btn" id="simToggle" aria-pressed="false" data-tip="気になるプランにチェックを入れると、月額・年額の合計金額をその場で計算できます。サイトにないサブスクの手動追加も可能">🧮 合計シミュレーター</button>
     <div class="toolbar__count" id="resultCount"></div>
     <div class="toolbar__options" id="toolbarOptions" hidden>
       <div class="toolbar__group">
