@@ -87,7 +87,6 @@
     .price-label{color:var(--iw-gray);font-size:13px;min-width:0}
     .price-label.large{font-size:16px;color:var(--iw-dark)}
     .price-amount{font-weight:bold;font-size:16px;color:var(--iw-dark)}
-    .price-amount.usd{color:#1a6e40}
     .price-unit{color:var(--iw-gray);font-size:12px}
 
     .badge-history{display:inline-block;font-size:10px;background:#fff8dc;border:1px solid #c8a000;color:#7a5c00;border-radius:2px;padding:1px 5px;margin-left:4px;vertical-align:middle;white-space:nowrap}
@@ -224,7 +223,6 @@
       .badge-history{display:none}
       .main-wrap{max-width:100%;padding:0}
       a{color:#000;text-decoration:none}
-      .price-amount.usd{color:#000}
     }
 
     /* ===== アニメーション抑制（ユーザー設定優先） ===== */
@@ -356,7 +354,7 @@ function fmtAnnualNote(p){
     return `月額換算：約${Math.round(p.amount/12).toLocaleString()}円（編集部算出）`;
   }
   if(p.currency==='USD'){
-    return `年額換算：約${toJpyAnnual(p).toLocaleString()}円（1ドル=${USD_TO_JPY}円で編集部算出）`;
+    return `年額換算：${(p.amount*12).toLocaleString()}ドル（税別・編集部算出）`;
   }
   return `年額換算：${toJpyAnnual(p).toLocaleString()}円（編集部算出）`;
 }
