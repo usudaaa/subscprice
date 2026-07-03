@@ -142,11 +142,15 @@
 
     /* ===== 価格ミニグラフ（モーダル内） ===== */
     .price-chart{margin:8px 0 14px;padding:8px 10px;background:#fafbfd;border:1px solid var(--iw-border);border-radius:3px}
-    .price-chart__svg{width:100%;height:60px;display:block}
-    .price-chart__line{fill:none;stroke:var(--iw-blue);stroke-width:2}
+    .price-chart__svg{width:100%;height:auto;display:block}
+    .price-chart__line{fill:none;stroke:var(--iw-blue);stroke-width:2;stroke-linejoin:round}
+    .price-chart__axis{stroke:var(--iw-border);stroke-width:1}
     .price-chart__dot{fill:var(--iw-navy)}
-    .price-chart__label{font-size:9px;fill:var(--iw-gray);font-family:var(--font-body)}
-    .price-chart__amount{font-size:10px;fill:var(--iw-navy);font-family:var(--font-body);font-weight:bold}
+    .price-chart__dot--up{fill:#c0392b}
+    .price-chart__dot--down{fill:#1a7a3a}
+    .price-chart__label{font-size:10px;fill:var(--iw-gray);font-family:var(--font-body)}
+    .price-chart__amount{font-size:11px;fill:var(--iw-navy);font-family:var(--font-body);font-weight:bold}
+    .price-chart__amount--current{font-size:12px}
     .price-chart__caption{font-size:10px;color:#888;text-align:right;margin-top:2px}
 
     /* ===== 年額換算表示 ===== */
@@ -285,6 +289,7 @@ function getCurrentPrice(plan){
 }
 
 function fmtAmount(p){
+  if(!p.amount) return '価格未確認';
   if(p.currency==='JPY') return p.amount.toLocaleString()+'円';
   return p.amount+' USドル';
 }
@@ -294,6 +299,7 @@ function fmtBilling(b){
 }
 
 function fmtTax(p){
+  if(!p.amount) return '';
   if(p.currency==='USD') return '(税別)';
   return p.tax_included ? '' : '(税別)';
 }
@@ -498,7 +504,7 @@ function buildTable(services, showCat){
         <span class="price-label${bigLabel?' large':''}">${escapeHtml(plan.name)}</span>
         <span class="price-amount${isUSD?' usd':''}">${fmtAmount(cur)}</span>
         ${taxNote?`<span class="price-unit">${taxNote}</span>`:''}
-        <span class="price-unit">${fmtBilling(cur.billing)}</span>
+        ${cur.amount?`<span class="price-unit">${fmtBilling(cur.billing)}</span>`:''}
         ${annualHtml}
       </div>`;
     }).join('');
@@ -515,42 +521,72 @@ function buildTable(services, showCat){
   return table;
 }
 
-// ===== 価格推移ミニグラフ =====
+// ===== 価格推移ミニグラフ（階段状） =====
 function buildPriceChart(plan){
-  const history = [...plan.price_history].sort((a,b)=>new Date(a.valid_from)-new Date(b.valid_from));
+  // 現在の通貨と同じエントリのみ描画（ドル建て→円建て移行などの通貨またぎは対象外）
+  const curEntry = getCurrentPrice(plan);
+  if(!curEntry) return '';
+  let history = plan.price_history
+    .filter(h=>h.currency===curEntry.currency && h.billing===curEntry.billing && h.amount>0)
+    .sort((a,b)=>a.valid_from.localeCompare(b.valid_from));
   if(history.length < 2) return '';
-  const W = 600, H = 60, PAD_L = 50, PAD_R = 80, PAD_T = 12, PAD_B = 18;
+  const W = 600, H = 120, PAD_L = 14, PAD_R = 76, PAD_T = 26, PAD_B = 24;
   const innerW = W - PAD_L - PAD_R, innerH = H - PAD_T - PAD_B;
   const amounts = history.map(h=>h.amount);
   const minA = Math.min(...amounts), maxA = Math.max(...amounts);
   const range = maxA - minA || 1;
-  const dates = history.map(h=>new Date(h.valid_from).getTime());
-  const minD = dates[0], maxD = dates[dates.length-1];
-  const dRange = maxD - minD || 1;
-  const points = history.map((h,i)=>{
-    const x = PAD_L + ((dates[i]-minD)/dRange)*innerW;
-    const y = PAD_T + innerH - ((h.amount-minA)/range)*innerH;
-    return {x, y, h};
+  const times = history.map(h=>new Date(h.valid_from).getTime());
+  const endT = Math.max(Date.now(), times[times.length-1]);
+  const minT = times[0], tRange = endT - minT || 1;
+  const X = t => PAD_L + ((t-minT)/tRange)*innerW;
+  const Y = a => PAD_T + innerH - ((a-minA)/range)*innerH;
+  const unit = curEntry.currency === 'USD' ? '$' : '¥';
+
+  // 階段状パスと改定点
+  let pathD = '';
+  const points = [];
+  history.forEach((h,i)=>{
+    const x1 = X(times[i]);
+    const x2 = (i < history.length-1) ? X(times[i+1]) : X(endT);
+    const yy = Y(h.amount);
+    pathD += (i===0 ? `M${x1},${yy}` : `L${x1},${yy}`) + `L${x2},${yy}`;
+    const dir = i===0 ? 0 : Math.sign(h.amount - history[i-1].amount);
+    points.push({x:x1, y:yy, h, dir});
   });
-  // 現在価格も追加（線の終点）
   const last = history[history.length-1];
-  if(last.valid_to !== null){
-    // 履歴上の最終エントリが過去のもの＝現在価格が別なら追加しない（このケースは稀）
-  }
-  const pathD = points.map((p,i)=>(i===0?'M':'L')+p.x+','+p.y).join('');
-  const labelStart = fmtYM(history[0].valid_from);
-  const labelEnd = history[history.length-1].valid_to === null ? '現在' : fmtYM(history[history.length-1].valid_to);
-  const unit = history[0].currency === 'USD' ? '$' : '¥';
-  const currentAmt = unit + last.amount.toLocaleString();
+  const endY = Y(last.amount);
+
+  const dots = points.map(p=>{
+    const cls = p.dir>0 ? ' price-chart__dot--up' : p.dir<0 ? ' price-chart__dot--down' : '';
+    return `<circle cx="${p.x}" cy="${p.y}" r="4" class="price-chart__dot${cls}"><title>${fmtYM(p.h.valid_from)}: ${unit}${p.h.amount.toLocaleString()}</title></circle>`;
+  }).join('');
+
+  // 金額ラベル（改定点の上）：横に近すぎる場合は間引き
+  let lastLabelX = -Infinity;
+  const amountLabels = points.map(p=>{
+    if(p.x - lastLabelX < 56) return '';
+    lastLabelX = p.x;
+    return `<text x="${p.x}" y="${p.y-8}" class="price-chart__amount">${unit}${p.h.amount.toLocaleString()}</text>`;
+  }).join('');
+
+  // 年ラベル（改定点の下）：近接・同一年は間引き
+  let lastYearX = -Infinity, lastYear = null;
+  const yearLabels = points.map(p=>{
+    const yr = new Date(p.h.valid_from).getFullYear();
+    if(p.x - lastYearX < 48 || yr === lastYear) return '';
+    lastYearX = p.x; lastYear = yr;
+    return `<text x="${p.x}" y="${H-6}" class="price-chart__label">${yr}年</text>`;
+  }).join('');
+
   return `<div class="price-chart">
-    <svg class="price-chart__svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="価格推移グラフ">
-      <text x="0" y="${PAD_T+4}" class="price-chart__amount">${unit}${maxA.toLocaleString()}</text>
-      <text x="0" y="${H-PAD_B+12}" class="price-chart__amount">${unit}${minA.toLocaleString()}</text>
+    <svg class="price-chart__svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="価格推移グラフ">
+      <line x1="${PAD_L}" y1="${PAD_T+innerH}" x2="${W-PAD_R}" y2="${PAD_T+innerH}" class="price-chart__axis"/>
       <path class="price-chart__line" d="${pathD}"/>
-      ${points.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="3" class="price-chart__dot"><title>${fmtYM(p.h.valid_from)}: ${unit}${p.h.amount.toLocaleString()}</title></circle>`).join('')}
-      <text x="${PAD_L}" y="${H-2}" class="price-chart__label">${labelStart}</text>
-      <text x="${W-PAD_R}" y="${H-2}" class="price-chart__label">${labelEnd}</text>
-      <text x="${W-PAD_R+8}" y="${points[points.length-1].y+4}" class="price-chart__amount">${currentAmt}</text>
+      ${dots}
+      ${amountLabels}
+      ${yearLabels}
+      <text x="${W-PAD_R+8}" y="${endY+4}" class="price-chart__amount price-chart__amount--current">${unit}${last.amount.toLocaleString()}</text>
+      <text x="${W-PAD_R+8}" y="${endY+16}" class="price-chart__label">現在</text>
     </svg>
   </div>`;
 }
@@ -577,7 +613,7 @@ function openModal(id){
       const period=isCur?`${fmtYM(h.valid_from)} 〜 現在`:`${fmtYM(h.valid_from)} 〜 ${fmtYM(h.valid_to)}`;
       const next=sorted[idx+1];
       let changeBadge='';
-      if(next){
+      if(next && next.currency===h.currency){
         if(h.amount>next.amount) changeBadge='<span class="badge-up">値上げ</span>';
         else if(h.amount<next.amount) changeBadge='<span class="badge-down">値下げ</span>';
       }
@@ -585,7 +621,7 @@ function openModal(id){
       const srcHtml=h.source?`<span class="source-link">(<a href="${h.source}" target="_blank" rel="noopener">出典</a>)</span>`:'';
       return `<tr class="${isCur?'current':''}">
         <td>${period}</td>
-        <td>${fmtAmount(h)}${taxNote}${fmtBilling(h.billing)}${isCur?'<span class="badge-current">現在</span>':''}${changeBadge}</td>
+        <td>${fmtAmount(h)}${taxNote}${h.amount?fmtBilling(h.billing):''}${isCur?'<span class="badge-current">現在</span>':''}${changeBadge}</td>
         <td>${h.note||'—'} ${srcHtml}</td>
       </tr>`;
     }).join('');
