@@ -335,7 +335,7 @@ function fmtYM(str){
 
 // ===== 追加ユーティリティ =====
 // USD->JPYざっくり換算（年額換算の比較用、TODO: 為替レートは編集部で確認）
-const USD_TO_JPY = 150;
+const USD_TO_JPY = 160;
 function toJpyAnnual(p){
   if(!p) return 0;
   let monthly = p.currency==='USD' ? p.amount*USD_TO_JPY : p.amount;
