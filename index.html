@@ -61,6 +61,19 @@
     /* ===== メインレイアウト ===== */
     .main-wrap{max-width:980px;margin:0 auto;padding:0 12px}
 
+    /* ===== 合計シミュレーター ===== */
+    .sim-check{width:16px;height:16px;accent-color:var(--iw-navy);margin-right:2px;cursor:pointer;flex-shrink:0;align-self:center}
+    .sim-bar{position:fixed;left:0;right:0;bottom:0;background:var(--iw-navy);color:#fff;z-index:90;box-shadow:0 -2px 10px rgba(0,0,64,.35);display:none}
+    .sim-bar.show{display:block}
+    .sim-bar__inner{max-width:980px;margin:0 auto;padding:10px 12px;display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;font-size:13px}
+    .sim-bar__total{font-size:16px;font-weight:bold}
+    .sim-bar__total small{font-weight:normal;font-size:12px;opacity:.85}
+    .sim-bar__btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.35);color:#fff;font-size:12px;padding:4px 10px;border-radius:3px;cursor:pointer;font-family:inherit;white-space:nowrap}
+    .sim-bar__btn:hover{background:rgba(255,255,255,.28)}
+    .sim-chip{background:rgba(255,255,255,.12);border-radius:10px;padding:1px 8px;font-size:11px;display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+    .sim-chip button{background:none;border:none;color:#fff;cursor:pointer;font-size:12px;padding:0;line-height:1}
+    body.sim-open{padding-bottom:72px}
+
     /* ===== 改定ニュース欄 ===== */
     .news-box{margin:14px 0 2px;border:1px solid var(--iw-border);border-radius:3px;background:#fff;overflow:hidden}
     .news-box__head{font-size:13px;font-weight:bold;color:var(--iw-navy);padding:7px 12px;border-bottom:1px solid var(--iw-border);background:var(--iw-blue-light)}
@@ -219,7 +232,7 @@
     /* ===== 印刷用 ===== */
     @media print{
       body{font-size:11pt;color:#000;background:#fff}
-      .site-header,.cat-nav,.toolbar,.btn-detail,.modal-overlay,.site-footer{display:none !important}
+      .site-header,.cat-nav,.toolbar,.btn-detail,.modal-overlay,.site-footer,.sim-bar,.sim-check,.news-box{display:none !important}
       .page-header{background:none;border-bottom:2px solid #000;padding:8px 0}
       .page-header__title{color:#000;border:none;padding:0;font-size:16pt}
       .page-header__lead{color:#333;padding:0;font-size:10pt;margin-top:4px}
@@ -297,6 +310,11 @@
 
 <div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true">
   <div class="modal" id="modalContent"></div>
+</div>
+
+<!-- 合計シミュレーターバー -->
+<div class="sim-bar" id="simBar" role="status" aria-live="polite">
+  <div class="sim-bar__inner" id="simBarInner"></div>
 </div>
 
 <footer class="site-footer">
@@ -571,7 +589,9 @@ function buildTable(services, showCat){
       const isUSD=cur.currency==='USD';
       const taxNote=fmtTax(cur);
       const annualHtml = fmtMonthlyEquiv(cur);
+      const checkbox = cur.amount>0 ? `<input type="checkbox" class="sim-check" data-pid="${plan.id}" ${sim.selected.has(plan.id)?'checked':''} aria-label="${escapeHtml(svc.name)} ${escapeHtml(plan.name)}を合計に追加">` : '';
       return `<div class="price-row">
+        ${checkbox}
         <span class="price-label${bigLabel?' large':''}">${escapeHtml(plan.name)}</span>
         <span class="price-amount${isUSD?' usd':''}">${fmtAmount(cur)}</span>
         ${taxNote?`<span class="price-unit">${taxNote}</span>`:''}
@@ -743,6 +763,100 @@ function closeModal(){
   document.body.style.overflow='';
 }
 
+// ===== 合計シミュレーター =====
+const sim = { selected: new Set(), custom: [] };
+let simPlanMap = {};  // plan.id → {svc, plan}
+
+function simLoad(){
+  try {
+    const raw = localStorage.getItem('spw_sim');
+    if(!raw) return;
+    const d = JSON.parse(raw);
+    (d.ids||[]).forEach(id=>{ if(simPlanMap[id]) sim.selected.add(id); });
+    sim.custom = (d.custom||[]).filter(c=>c && c.name && c.amount>0);
+  } catch(e){}
+}
+function simSave(){
+  try { localStorage.setItem('spw_sim', JSON.stringify({ids:[...sim.selected], custom:sim.custom})); } catch(e){}
+}
+
+function simTotals(){
+  let mJPY=0, yJPY=0, mUSD=0, yUSD=0, count=0;
+  sim.selected.forEach(pid=>{
+    const info = simPlanMap[pid];
+    if(!info) return;
+    const cur = getCurrentPrice(info.plan);
+    if(!cur || !cur.amount) return;
+    count++;
+    const m = cur.billing==='annual' ? cur.amount/12 : cur.amount;
+    const y = cur.billing==='annual' ? cur.amount : cur.amount*12;
+    if(cur.currency==='USD'){ mUSD+=m; yUSD+=y; } else { mJPY+=m; yJPY+=y; }
+  });
+  sim.custom.forEach(c=>{ mJPY+=c.amount; yJPY+=c.amount*12; count++; });
+  return { mJPY:Math.round(mJPY), yJPY:Math.round(yJPY), mUSD:Math.round(mUSD), yUSD:Math.round(yUSD), count };
+}
+
+function updateSimBar(){
+  const bar = document.getElementById('simBar');
+  const t = simTotals();
+  simSave();
+  if(!t.count){
+    bar.classList.remove('show');
+    document.body.classList.remove('sim-open');
+    return;
+  }
+  const fm = n=>n.toLocaleString();
+  const mParts=[]; if(t.mJPY) mParts.push(fm(t.mJPY)+'円'); if(t.mUSD) mParts.push(fm(t.mUSD)+' USドル');
+  const yParts=[]; if(t.yJPY) yParts.push(fm(t.yJPY)+'円'); if(t.yUSD) yParts.push(fm(t.yUSD)+' USドル');
+  const chips = sim.custom.map((c,i)=>
+    `<span class="sim-chip">${escapeHtml(c.name)} ${fm(c.amount)}円<button data-ci="${i}" aria-label="${escapeHtml(c.name)}を削除">✕</button></span>`
+  ).join('');
+  document.getElementById('simBarInner').innerHTML = `
+    <span>🧮 ${t.count}件選択中</span>
+    <span class="sim-bar__total">月 ${mParts.join(' + ')||'0円'} <small>／ 年 ${yParts.join(' + ')||'0円'}</small></span>
+    ${chips}
+    <span style="flex:1"></span>
+    <button class="sim-bar__btn" id="simAddCustom">＋その他を追加</button>
+    <button class="sim-bar__btn" id="simClear">クリア</button>`;
+  bar.classList.add('show');
+  document.body.classList.add('sim-open');
+}
+
+// チェックボックス（一覧内・再描画されるためデリゲート）
+document.getElementById('serviceList').addEventListener('change', e=>{
+  const cb = e.target.closest('.sim-check');
+  if(!cb) return;
+  if(cb.checked) sim.selected.add(cb.dataset.pid);
+  else sim.selected.delete(cb.dataset.pid);
+  updateSimBar();
+});
+
+// バー内ボタン（デリゲート）
+document.getElementById('simBar').addEventListener('click', e=>{
+  if(e.target.id === 'simClear'){
+    sim.selected.clear();
+    sim.custom = [];
+    updateSimBar();
+    renderList();  // チェック状態を反映し直す
+    return;
+  }
+  if(e.target.id === 'simAddCustom'){
+    const name = prompt('サービス名（このサイトにないサブスクを合計に足せます）');
+    if(!name || !name.trim()) return;
+    const amtStr = prompt(`「${name.trim()}」の月額（円・税込）`);
+    const amt = Number(amtStr);
+    if(!amt || amt <= 0){ alert('金額は1以上の数字で入力してください'); return; }
+    sim.custom.push({ name: name.trim(), amount: Math.round(amt) });
+    updateSimBar();
+    return;
+  }
+  const del = e.target.closest('.sim-chip button');
+  if(del){
+    sim.custom.splice(Number(del.dataset.ci), 1);
+    updateSimBar();
+  }
+});
+
 // ===== 改定ニュース欄（price_historyから自動生成） =====
 function buildNews(){
   const cutoff = new Date();
@@ -812,9 +926,12 @@ fetch('data/db.json')
       const [y,m,d] = DB.last_updated.split('-').map(Number);
       document.getElementById('pageUpdated').textContent = `最終更新：${y}年${m}月${d}日`;
     }
+    DB.services.forEach(svc=>svc.plans.forEach(plan=>{ simPlanMap[plan.id] = {svc, plan}; }));
+    simLoad();
     buildCatNav();
     buildNews();
     renderList();
+    updateSimBar();
   })
   .catch(err=>{
     document.getElementById('serviceList').innerHTML =
