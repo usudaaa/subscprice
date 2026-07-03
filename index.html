@@ -112,6 +112,8 @@
     .col-service{width:22%}.col-plans{width:60%}.col-action{width:18%}
 
     .service-name{font-weight:bold;font-size:17px;color:var(--iw-dark)}
+    .service-name[data-id]{cursor:pointer}
+    .service-name[data-id]:hover{color:var(--iw-blue);text-decoration:underline}
     .service-provider{font-size:11px;color:#888;margin-top:2px}
 
     .price-row{display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 12px;margin-bottom:2px}
@@ -614,7 +616,7 @@ function buildTable(services, showCat){
     const chg = recentChange(svc);
     const chgBadges = (chg.up?'<span class="badge-up">値上げ</span>':'') + (chg.down?'<span class="badge-down">値下げ</span>':'');
     tr.innerHTML=`
-      <td><div class="service-name">${escapeHtml(svc.name)}${chgBadges}</div><div class="service-provider">${escapeHtml(svc.provider)}</div>${catLabel}</td>
+      <td><div class="service-name" data-id="${svc.id}" title="${escapeHtml(svc.name)}の詳細と価格推移を見る">${escapeHtml(svc.name)}${chgBadges}</div><div class="service-provider">${escapeHtml(svc.provider)}</div>${catLabel}</td>
       <td>${priceHtml}</td>
       <td><button class="btn-detail" data-id="${svc.id}" aria-label="${escapeHtml(svc.name)}の詳細と価格推移を見る">詳細・推移 ›</button></td>`;
     tbody.appendChild(tr);
@@ -697,12 +699,14 @@ const overlay=document.getElementById('modalOverlay');
 
 document.getElementById('serviceList').addEventListener('click',e=>{
   const btn=e.target.closest('.btn-detail');
-  if(btn) openModal(btn.dataset.id);
+  if(btn){ openModal(btn.dataset.id); return; }
+  const nm=e.target.closest('.service-name[data-id]');
+  if(nm) openModal(nm.dataset.id);
 });
 overlay.addEventListener('click',e=>{ if(e.target===overlay)closeModal(); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape')closeModal(); });
 
-function openModal(id){
+function openModal(id, fromHistory){
   const svc=DB.services.find(s=>s.id===id);
   if(!svc)return;
 
@@ -766,12 +770,43 @@ function openModal(id){
   const closeBtn = document.getElementById('modalCloseBtn');
   closeBtn.addEventListener('click',closeModal);
   closeBtn.focus();
+
+  // スマホの「戻る」で閉じられるよう履歴に積む（URLも #サービスid になり共有可能）
+  if(!fromHistory){
+    history.pushState({modal:id}, '', '#'+encodeURIComponent(id));
+  }
 }
 
-function closeModal(){
+function doCloseModal(){
   overlay.classList.remove('open');
   document.body.style.overflow='';
 }
+
+function closeModal(){
+  if(history.state && history.state.modal){
+    if(history.state.deep){
+      // 直リンクで開いた場合：戻るとサイト外に出てしまうのでその場で閉じてURLだけ戻す
+      doCloseModal();
+      history.replaceState(null, '', location.pathname + location.search);
+    } else {
+      history.back();  // popstateハンドラが実際に閉じる
+    }
+    return;
+  }
+  doCloseModal();
+}
+
+window.addEventListener('popstate', e=>{
+  if(e.state && e.state.modal){ openModal(e.state.modal, true); return; }
+  // ページ内でのハッシュ遷移（#サービスid へのリンククリック等）にも対応
+  const hid = decodeURIComponent(location.hash.slice(1));
+  if(hid && DB && DB.services.some(s=>s.id===hid)){
+    history.replaceState({modal:hid, deep:true}, '', '#'+encodeURIComponent(hid));
+    openModal(hid, true);
+    return;
+  }
+  doCloseModal();
+});
 
 // ===== 合計シミュレーター =====
 const sim = { mode: false, selected: new Set(), custom: [] };
@@ -989,6 +1024,12 @@ fetch('data/db.json')
     buildNews();
     renderList();
     setSimMode(sim.mode);
+    // 直リンク対応：#サービスid で開くと最初からそのモーダルを表示
+    const hashId = decodeURIComponent(location.hash.slice(1));
+    if(hashId && DB.services.some(s=>s.id===hashId)){
+      history.replaceState({modal:hashId, deep:true}, '', '#'+encodeURIComponent(hashId));
+      openModal(hashId, true);
+    }
   })
   .catch(err=>{
     document.getElementById('serviceList').innerHTML =
