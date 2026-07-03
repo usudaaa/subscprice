@@ -49,8 +49,14 @@
     .page-header{background:var(--iw-blue-light);border-bottom:2px solid var(--iw-navy);padding:18px 0 14px}
     .page-header__inner{max-width:980px;margin:0 auto;padding:0 12px}
     .page-header__title{font-size:22px;font-weight:bold;color:var(--iw-navy);margin-bottom:6px;border-left:4px solid var(--iw-navy);padding-left:10px}
-    .page-header__lead{font-size:13px;color:var(--iw-gray);line-height:1.7;padding-left:14px}
-    .page-header__updated{font-size:11px;color:#888;margin-top:6px;padding-left:14px}
+    .page-header__meta{display:flex;align-items:center;gap:16px;padding-left:14px;margin-top:2px}
+    .page-header__updated{font-size:11px;color:#888}
+    .about-toggle{background:none;border:none;color:var(--iw-link);font-size:12px;cursor:pointer;padding:0;font-family:inherit}
+    .about-toggle:hover{text-decoration:underline;color:var(--iw-link-hover)}
+    .page-header__lead{font-size:13px;color:var(--iw-gray);line-height:1.7;margin:10px 0 0 14px;padding:10px 34px 10px 12px;background:#fff;border:1px solid var(--iw-border);border-radius:3px;position:relative}
+    .page-header__lead[hidden]{display:none}
+    .about-close{position:absolute;top:4px;right:6px;background:none;border:none;font-size:18px;color:#999;cursor:pointer;line-height:1;padding:2px 4px;font-family:inherit}
+    .about-close:hover{color:var(--iw-dark)}
 
     /* ===== メインレイアウト ===== */
     .main-wrap{max-width:980px;margin:0 auto;padding:0 12px}
@@ -139,6 +145,11 @@
     .toolbar__input:focus{outline:none;border-color:var(--iw-blue);box-shadow:0 0 0 2px rgba(0,85,204,.15)}
     .toolbar__select{font-family:inherit;font-size:12px;padding:4px 8px;border:1px solid #b0bcd8;border-radius:3px;background:#fff;color:var(--iw-dark);cursor:pointer}
     .toolbar__count{margin-left:auto;font-size:11px;color:#888}
+    .toolbar__filter-btn{font-family:inherit;font-size:12px;padding:5px 12px;border:1px solid #b0bcd8;border-radius:3px;background:#fff;color:var(--iw-dark);cursor:pointer;white-space:nowrap}
+    .toolbar__filter-btn:hover{border-color:var(--iw-blue);color:var(--iw-blue)}
+    .toolbar__filter-btn.active{background:var(--iw-blue-light);border-color:var(--iw-blue);color:var(--iw-blue)}
+    .toolbar__options{flex-basis:100%;display:flex;gap:14px;flex-wrap:wrap;padding:2px 0}
+    .toolbar__options[hidden]{display:none}
 
     /* ===== 価格ミニグラフ（モーダル内） ===== */
     .price-chart{margin:8px 0 14px;padding:8px 10px;background:#fafbfd;border:1px solid var(--iw-border);border-radius:3px}
@@ -235,8 +246,14 @@
 <div class="page-header">
   <div class="page-header__inner">
     <h1 class="page-header__title">サブスクリプション価格ウォッチ</h1>
-    <p class="page-header__lead">主要テクノロジー系サブスクリプションサービスの現在価格と価格改定履歴をまとめています。<br>価格は税込・月額を基本とし、ドル建てサービスはUSドル(税別)表記です。</p>
-    <p class="page-header__updated" id="pageUpdated"></p>
+    <div class="page-header__meta">
+      <span class="page-header__updated" id="pageUpdated"></span>
+      <button type="button" class="about-toggle" id="aboutToggle" aria-expanded="false" aria-controls="aboutBox">ⓘ このコーナーについて</button>
+    </div>
+    <div class="page-header__lead" id="aboutBox" hidden>
+      <button type="button" class="about-close" id="aboutClose" aria-label="説明を閉じる">&times;</button>
+      主要テクノロジー系サブスクリプションサービスの現在価格と価格改定履歴をまとめています。<br>価格は税込・月額を基本とし、ドル建てサービスはUSドル(税別)表記です。
+    </div>
   </div>
 </div>
 
@@ -245,23 +262,26 @@
   <div class="toolbar" role="search">
     <label class="sr-only" for="searchInput">サービス検索</label>
     <input type="search" id="searchInput" class="toolbar__input" placeholder="🔍 サービス名・提供元で検索…" aria-label="サービス検索">
-    <div class="toolbar__group">
-      <label for="sortSelect">並び順:</label>
-      <select id="sortSelect" class="toolbar__select" aria-label="並び順">
-        <option value="default">カテゴリ順</option>
-        <option value="name">サービス名(あいうえお)</option>
-        <option value="price-asc">価格が安い順</option>
-        <option value="price-desc">価格が高い順</option>
-      </select>
-    </div>
-    <div class="toolbar__group">
-      <label for="historyFilter">表示:</label>
-      <select id="historyFilter" class="toolbar__select" aria-label="フィルタ">
-        <option value="all">すべて</option>
-        <option value="history">改定履歴ありのみ</option>
-      </select>
-    </div>
+    <button type="button" class="toolbar__filter-btn" id="filterToggle" aria-expanded="false" aria-controls="toolbarOptions">⚙ 絞り込み</button>
     <div class="toolbar__count" id="resultCount"></div>
+    <div class="toolbar__options" id="toolbarOptions" hidden>
+      <div class="toolbar__group">
+        <label for="sortSelect">並び順:</label>
+        <select id="sortSelect" class="toolbar__select" aria-label="並び順">
+          <option value="default">カテゴリ順</option>
+          <option value="name">サービス名(あいうえお)</option>
+          <option value="price-asc">価格が安い順</option>
+          <option value="price-desc">価格が高い順</option>
+        </select>
+      </div>
+      <div class="toolbar__group">
+        <label for="historyFilter">表示:</label>
+        <select id="historyFilter" class="toolbar__select" aria-label="フィルタ">
+          <option value="all">すべて</option>
+          <option value="history">改定履歴ありのみ</option>
+        </select>
+      </div>
+    </div>
   </div>
   <div id="serviceList" aria-live="polite"></div>
 </div>
@@ -411,8 +431,39 @@ searchInput.addEventListener('input', e=>{
     renderList();
   }, 120);
 });
-sortSelect.addEventListener('change', e=>{ state.sort = e.target.value; renderList(); });
-historyFilter.addEventListener('change', e=>{ state.historyFilter = e.target.value; renderList(); });
+sortSelect.addEventListener('change', e=>{ state.sort = e.target.value; updateFilterBtn(); renderList(); });
+historyFilter.addEventListener('change', e=>{ state.historyFilter = e.target.value; updateFilterBtn(); renderList(); });
+
+// ===== 絞り込みパネルの開閉 =====
+const filterToggle = document.getElementById('filterToggle');
+const toolbarOptions = document.getElementById('toolbarOptions');
+filterToggle.addEventListener('click', ()=>{
+  toolbarOptions.hidden = !toolbarOptions.hidden;
+  filterToggle.setAttribute('aria-expanded', toolbarOptions.hidden ? 'false' : 'true');
+});
+function updateFilterBtn(){
+  const parts = [];
+  if(state.sort !== 'default') parts.push(sortSelect.options[sortSelect.selectedIndex].text);
+  if(state.historyFilter !== 'all') parts.push(historyFilter.options[historyFilter.selectedIndex].text);
+  filterToggle.textContent = parts.length ? `⚙ 絞り込み中：${parts.join('・')}` : '⚙ 絞り込み';
+  filterToggle.classList.toggle('active', parts.length > 0);
+}
+
+// ===== 「このコーナーについて」の開閉（初回のみ自動表示） =====
+const aboutBox = document.getElementById('aboutBox');
+const aboutToggle = document.getElementById('aboutToggle');
+function setAbout(open){
+  aboutBox.hidden = !open;
+  aboutToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+aboutToggle.addEventListener('click', ()=>setAbout(aboutBox.hidden));
+document.getElementById('aboutClose').addEventListener('click', ()=>setAbout(false));
+try{
+  if(!localStorage.getItem('spw_about_seen')){
+    setAbout(true);
+    localStorage.setItem('spw_about_seen','1');
+  }
+}catch(e){ /* プライベートブラウズ等でlocalStorage不可の場合は畳んだまま */ }
 
 // ===== 一覧レンダリング =====
 function filterServices(){
