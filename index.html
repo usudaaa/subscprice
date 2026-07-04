@@ -47,10 +47,20 @@
 
     /* ===== グローバルナビ（Impress Watch共通カテゴリ） ===== */
     .global-nav{background:#fff;border-bottom:1px solid var(--iw-border)}
-    .global-nav__inner{max-width:980px;margin:0 auto;padding:0 12px;display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .global-nav__inner{max-width:980px;margin:0 auto;padding:0 12px;display:flex}
     .global-nav__inner a{display:block;padding:9px 18px;font-size:13px;font-weight:bold;color:var(--iw-dark);text-decoration:none;white-space:nowrap;border-left:1px solid var(--iw-border)}
     .global-nav__inner a:last-child{border-right:1px solid var(--iw-border)}
     .global-nav__inner a:hover{color:var(--iw-blue);background:var(--iw-blue-light)}
+    .nav-toggle{display:none;background:none;border:1px solid rgba(255,255,255,.45);color:#fff;font-size:17px;line-height:1;border-radius:3px;padding:4px 10px;cursor:pointer;margin-left:auto;font-family:inherit}
+    .nav-toggle:hover{background:rgba(255,255,255,.15)}
+    @media(max-width:768px){
+      .nav-toggle{display:block}
+      .global-nav{display:none}
+      .global-nav.open{display:block}
+      .global-nav__inner{flex-direction:column;padding:0}
+      .global-nav__inner a{border-left:none;border-bottom:1px solid var(--iw-border);padding:11px 16px}
+      .global-nav__inner a:last-child{border-right:none;border-bottom:none}
+    }
 
     /* ===== ページヘッダー ===== */
     .page-header{background:var(--iw-blue-light);border-bottom:2px solid var(--iw-navy);padding:18px 0 14px}
@@ -284,8 +294,9 @@
     <div class="site-header__breadcrumb">
       <a href="https://www.watch.impress.co.jp/">Home</a> &rsaquo; サブスク料金ナビ
     </div>
+    <button type="button" class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="globalNav" aria-label="カテゴリメニュー">☰</button>
   </div>
-  <nav class="global-nav" aria-label="Impress Watchカテゴリ">
+  <nav class="global-nav" id="globalNav" aria-label="Impress Watchカテゴリ">
     <div class="global-nav__inner">
       <a href="https://www.watch.impress.co.jp/category/tech/">テック</a>
       <a href="https://www.watch.impress.co.jp/category/business/">ビジネス</a>
@@ -293,7 +304,6 @@
       <a href="https://www.watch.impress.co.jp/category/enta/">エンタメ</a>
       <a href="https://www.watch.impress.co.jp/category/money/">マネー</a>
       <a href="https://www.watch.impress.co.jp/category/society/">社会</a>
-      <a href="https://www.watch.impress.co.jp/category/event/">イベント</a>
     </div>
   </nav>
 </header>
@@ -513,6 +523,13 @@ searchInput.addEventListener('input', e=>{
 });
 sortSelect.addEventListener('change', e=>{ state.sort = e.target.value; updateFilterBtn(); renderList(); });
 historyFilter.addEventListener('change', e=>{ state.historyFilter = e.target.value; updateFilterBtn(); renderList(); });
+
+// ===== グローバルナビ（スマホ：ハンバーガーメニュー） =====
+document.getElementById('navToggle').addEventListener('click', ()=>{
+  const nav = document.getElementById('globalNav');
+  const open = nav.classList.toggle('open');
+  document.getElementById('navToggle').setAttribute('aria-expanded', open ? 'true' : 'false');
+});
 
 // ===== 絞り込みパネルの開閉 =====
 const filterToggle = document.getElementById('filterToggle');
