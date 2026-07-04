@@ -987,6 +987,8 @@ function buildNews(){
       const sorted = [...plan.price_history].sort((a,b)=>String(a.valid_from||'').localeCompare(String(b.valid_from||'')));
       sorted.forEach((e,i)=>{
         if(!e.valid_from || e.valid_from < cutoffStr || !e.amount) return;
+        // 「編集部確認」＝サイト収録時の確認日であり実際の改定日ではないため、ニュース対象外
+        if(e.note && e.note.includes('編集部確認')) return;
         const prev = i > 0 ? sorted[i-1] : null;
         if(!prev){
           items.push({date:e.valid_from, svc, plan, type:'new', cur:e});
