@@ -651,7 +651,7 @@ function buildTable(services, showCat){
       return `<div class="price-row">
         ${checkbox}
         <span class="price-label${bigLabel?' large':''}">${escapeHtml(plan.name)}</span>
-        <span class="price-amount${isUSD?' usd':''}">${fmtAmount(cur)}</span>
+        <span class="${cur.amount?`price-amount${isUSD?' usd':''}`:'price-unit'}">${fmtAmount(cur)}</span>
         ${taxNote?`<span class="price-unit">${taxNote}</span>`:''}
         ${cur.amount?`<span class="price-unit">${fmtBilling(cur.billing)}</span>`:''}
         ${annualHtml}
