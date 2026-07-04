@@ -268,6 +268,11 @@ function renderEditor(svc) {
         </div>
         <div class="field-row">
           <div class="field"><label>URLラベル（リンクテキスト）</label><input id="f_url_label" value="${esc(svc.url_label)}"></div>
+        </div>
+        <div class="field-row full">
+          <div class="field"><label>概要説明</label><textarea id="f_description">${esc(svc.description)}</textarea></div>
+        </div>
+        <div class="field-row">
           <div class="field"><label>アフィリエイト用リンクテキスト（任意）</label><input id="f_aff_text" value="${esc(svc.affiliate_text||'')}" placeholder="例: Amazon Prime Videoに加入"></div>
         </div>
         <div class="field-row full">
@@ -276,9 +281,6 @@ function renderEditor(svc) {
             <input id="f_aff_url" value="${esc(svc.affiliate_url||'')}" placeholder="https://">
             <div class="field-note">リンクテキストとURLの両方を入力すると、公開ページの概要下部に加入ボタンが表示されます（PR表記は自動付与）</div>
           </div>
-        </div>
-        <div class="field-row full">
-          <div class="field"><label>概要説明</label><textarea id="f_description">${esc(svc.description)}</textarea></div>
         </div>
       </div>
     </div>
