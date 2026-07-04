@@ -268,6 +268,14 @@ function renderEditor(svc) {
         </div>
         <div class="field-row">
           <div class="field"><label>URLラベル（リンクテキスト）</label><input id="f_url_label" value="${esc(svc.url_label)}"></div>
+          <div class="field"><label>アフィリエイト用リンクテキスト（任意）</label><input id="f_aff_text" value="${esc(svc.affiliate_text||'')}" placeholder="例: Amazon Prime Videoに加入"></div>
+        </div>
+        <div class="field-row full">
+          <div class="field">
+            <label>アフィリエイトURL（任意）</label>
+            <input id="f_aff_url" value="${esc(svc.affiliate_url||'')}" placeholder="https://">
+            <div class="field-note">リンクテキストとURLの両方を入力すると、公開ページの概要下部に加入ボタンが表示されます（PR表記は自動付与）</div>
+          </div>
         </div>
         <div class="field-row full">
           <div class="field"><label>概要説明</label><textarea id="f_description">${esc(svc.description)}</textarea></div>
@@ -379,6 +387,8 @@ function saveService() {
   svc.categories = catVal ? [catVal] : (svc.categories||[]);
   svc.url      = document.getElementById('f_url').value;
   svc.url_label= document.getElementById('f_url_label').value;
+  svc.affiliate_text = document.getElementById('f_aff_text').value.trim();
+  svc.affiliate_url  = document.getElementById('f_aff_url').value.trim();
   svc.description = document.getElementById('f_description').value;
 
   svc.plans.forEach((plan, pi) => {

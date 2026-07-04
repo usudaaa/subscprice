@@ -165,6 +165,13 @@
     .modal-url a{color:var(--iw-link);text-decoration:none}
     .modal-url a:hover{text-decoration:underline;color:var(--iw-link-hover)}
 
+    /* 加入ボタン（アフィリエイト） */
+    .affiliate-cta{text-align:center;margin:16px 0 4px}
+    .affiliate-cta a{display:inline-block;background:#1a7a3a;color:#fff;font-size:14px;font-weight:bold;padding:10px 36px;border-radius:2px;text-decoration:none;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:background .15s}
+    .affiliate-cta a:hover{background:#145f2d}
+    .affiliate-cta a::after{content:' ›'}
+    .affiliate-note{font-size:10px;color:#999;margin-top:5px;text-align:center}
+
     /* 価格履歴テーブル */
     .plan-block{margin-bottom:20px}
     .plan-name{font-size:13px;font-weight:bold;color:var(--iw-navy);padding:5px 10px;background:var(--iw-blue-light);border-left:3px solid var(--iw-navy);margin-bottom:6px}
@@ -807,6 +814,7 @@ function openModal(id, fromHistory){
       <p class="modal-sec-title">サービス概要</p>
       <p class="modal-desc">${escapeHtml(svc.description).replace(/\n/g,'<br>')}</p>
       <p class="modal-url">公式サイト：<a href="${escapeHtml(svc.url)}" target="_blank" rel="noopener">${escapeHtml(svc.url_label)} ↗</a></p>
+      ${svc.affiliate_url && svc.affiliate_text ? `<div class="affiliate-cta"><a href="${escapeHtml(svc.affiliate_url)}" target="_blank" rel="sponsored noopener">${escapeHtml(svc.affiliate_text)}</a><div class="affiliate-note">※アフィリエイト広告（PR）を含みます</div></div>` : ''}
       <p class="modal-sec-title">価格一覧・改定履歴</p>
       ${plansHtml}
     </div>`;
