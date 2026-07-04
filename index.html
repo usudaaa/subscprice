@@ -36,23 +36,22 @@
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:var(--font-body);font-size:14px;line-height:1.7;color:var(--iw-dark);background:#fff}
 
-    /* ===== ヘッダー ===== */
-    .site-header{background:var(--iw-navy);border-bottom:3px solid #001f77}
+    /* ===== ヘッダー（白ベース・紙面調） ===== */
+    .site-header{background:#fff;border-top:3px solid var(--iw-navy);border-bottom:1px solid var(--iw-border)}
     .site-header__inner{max-width:980px;margin:0 auto;padding:0 12px;display:flex;align-items:center;height:48px;gap:16px}
-    .site-header__logo{color:#fff;font-size:19px;font-weight:bold;text-decoration:none;letter-spacing:-0.02em}
-    .site-header__logo span{font-size:11px;font-weight:normal;opacity:.8;margin-left:6px}
-    .site-header__breadcrumb{color:rgba(255,255,255,.75);font-size:12px}
-    .site-header__breadcrumb a{color:rgba(255,255,255,.85);text-decoration:none}
-    .site-header__breadcrumb a:hover{color:#fff}
+    .site-header__logo{color:var(--iw-navy);font-size:19px;font-weight:bold;text-decoration:none;letter-spacing:-0.02em}
+    .site-header__logo span{font-size:11px;font-weight:normal;color:#888;margin-left:6px}
+    .site-header__breadcrumb{color:#888;font-size:12px}
+    .site-header__breadcrumb a{color:var(--iw-link);text-decoration:none}
+    .site-header__breadcrumb a:hover{text-decoration:underline}
 
-    /* ===== グローバルナビ（Impress Watch共通カテゴリ） ===== */
+    /* ===== グローバルナビ（下線インジケータ型） ===== */
     .global-nav{background:#fff;border-bottom:1px solid var(--iw-border)}
-    .global-nav__inner{max-width:980px;margin:0 auto;padding:0 12px;display:flex}
-    .global-nav__inner a{display:block;padding:9px 18px;font-size:13px;font-weight:bold;color:var(--iw-dark);text-decoration:none;white-space:nowrap;border-left:1px solid var(--iw-border)}
-    .global-nav__inner a:last-child{border-right:1px solid var(--iw-border)}
-    .global-nav__inner a:hover{color:var(--iw-blue);background:var(--iw-blue-light)}
-    .nav-toggle{display:none;background:none;border:1px solid rgba(255,255,255,.45);color:#fff;font-size:17px;line-height:1;border-radius:3px;padding:4px 10px;cursor:pointer;margin-left:auto;font-family:inherit}
-    .nav-toggle:hover{background:rgba(255,255,255,.15)}
+    .global-nav__inner{max-width:980px;margin:0 auto;padding:0 12px;display:flex;gap:4px}
+    .global-nav__inner a{display:block;padding:8px 14px 6px;font-size:13px;font-weight:bold;color:var(--iw-dark);text-decoration:none;white-space:nowrap;border-bottom:2px solid transparent}
+    .global-nav__inner a:hover{color:var(--iw-navy);border-bottom-color:var(--iw-navy)}
+    .nav-toggle{display:none;background:none;border:1px solid #b0bcd8;color:var(--iw-navy);font-size:17px;line-height:1;border-radius:2px;padding:4px 10px;cursor:pointer;margin-left:auto;font-family:inherit}
+    .nav-toggle:hover{background:var(--iw-blue-light)}
     @media(max-width:768px){
       .nav-toggle{display:block}
       .global-nav{display:none}
@@ -62,15 +61,15 @@
       .global-nav__inner a:last-child{border-right:none;border-bottom:none}
     }
 
-    /* ===== ページヘッダー ===== */
-    .page-header{background:var(--iw-blue-light);border-bottom:2px solid var(--iw-navy);padding:18px 0 14px}
+    /* ===== ページヘッダー（白ベース・罫線区切り） ===== */
+    .page-header{background:#fff;border-bottom:1px solid var(--iw-border);padding:16px 0 12px}
     .page-header__inner{max-width:980px;margin:0 auto;padding:0 12px}
     .page-header__title{font-size:22px;font-weight:bold;color:var(--iw-navy);margin-bottom:6px;border-left:4px solid var(--iw-navy);padding-left:10px}
     .page-header__meta{display:flex;align-items:center;gap:16px;padding-left:14px;margin-top:2px}
     .page-header__updated{font-size:11px;color:#888}
     .about-toggle{background:none;border:none;color:var(--iw-link);font-size:12px;cursor:pointer;padding:0;font-family:inherit}
     .about-toggle:hover{text-decoration:underline;color:var(--iw-link-hover)}
-    .page-header__lead{font-size:13px;color:var(--iw-gray);line-height:1.7;margin:10px 0 0 14px;padding:10px 34px 10px 12px;background:#fff;border:1px solid var(--iw-border);border-radius:3px;position:relative}
+    .page-header__lead{font-size:13px;color:var(--iw-gray);line-height:1.7;margin:10px 0 0 14px;padding:10px 34px 10px 12px;background:var(--iw-light-gray);border:1px solid var(--iw-border);border-radius:2px;position:relative}
     .page-header__lead[hidden]{display:none}
     .about-close{position:absolute;top:4px;right:6px;background:none;border:none;font-size:18px;color:#999;cursor:pointer;line-height:1;padding:2px 4px;font-family:inherit}
     .about-close:hover{color:var(--iw-dark)}
@@ -86,14 +85,14 @@
     .sim-bar__inner{max-width:980px;margin:0 auto;padding:10px 12px;display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;font-size:13px}
     .sim-bar__total{font-size:16px;font-weight:bold}
     .sim-bar__total small{font-weight:normal;font-size:12px;opacity:.85}
-    .sim-bar__btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.35);color:#fff;font-size:12px;padding:4px 10px;border-radius:3px;cursor:pointer;font-family:inherit;white-space:nowrap}
+    .sim-bar__btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.35);color:#fff;font-size:12px;padding:4px 10px;border-radius:2px;cursor:pointer;font-family:inherit;white-space:nowrap}
     .sim-bar__btn:hover{background:rgba(255,255,255,.28)}
     .sim-chip{background:rgba(255,255,255,.12);border-radius:10px;padding:1px 8px;font-size:11px;display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
     .sim-chip button{background:none;border:none;color:#fff;cursor:pointer;font-size:12px;padding:0;line-height:1}
     body.sim-open{padding-bottom:72px}
 
     /* ===== 改定ニュース欄 ===== */
-    .news-box{margin:14px 0 2px;border:1px solid var(--iw-border);border-radius:3px;background:#fff;overflow:hidden}
+    .news-box{margin:14px 0 2px;border:1px solid var(--iw-border);border-radius:2px;background:#fff;overflow:hidden}
     .news-box__head{display:block;width:100%;text-align:left;border:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:bold;color:var(--iw-navy);padding:7px 12px;border-bottom:1px solid var(--iw-border);background:var(--iw-blue-light)}
     .news-box.collapsed .news-box__head{background:#fff;border-bottom:none;font-weight:normal;color:var(--iw-gray);font-size:12px;padding:5px 12px}
     .news-box.collapsed .news-box__head:hover{color:var(--iw-blue)}
@@ -111,13 +110,13 @@
 
     /* ===== カテゴリナビ ===== */
     .cat-nav{display:flex;gap:4px;flex-wrap:wrap;padding:12px 0 10px;border-bottom:1px solid var(--iw-border);margin-bottom:0}
-    .cat-nav__btn{background:#fff;border:1px solid #b0bcd8;border-radius:3px;padding:4px 12px;font-size:12px;cursor:pointer;color:var(--iw-dark);transition:all .15s;white-space:nowrap;font-family:inherit}
+    .cat-nav__btn{background:#fff;border:1px solid #b0bcd8;border-radius:2px;padding:4px 12px;font-size:12px;cursor:pointer;color:var(--iw-dark);transition:all .15s;white-space:nowrap;font-family:inherit}
     .cat-nav__btn:hover{border-color:var(--iw-blue);color:var(--iw-blue);background:var(--iw-blue-light)}
     .cat-nav__btn.active{background:var(--iw-navy);border-color:var(--iw-navy);color:#fff}
 
     /* ===== カテゴリセクション ===== */
     .category-section{margin:24px 0 0}
-    .category-section__heading{font-size:15px;font-weight:bold;color:#fff;background:var(--iw-navy);padding:7px 14px;border-radius:3px 3px 0 0;display:flex;align-items:center;gap:8px}
+    .category-section__heading{font-size:15px;font-weight:bold;color:#fff;background:var(--iw-navy);padding:7px 14px;border-radius:2px 3px 0 0;display:flex;align-items:center;gap:8px}
     .category-section__heading::before{content:'';display:inline-block;width:3px;height:16px;background:rgba(255,255,255,.5);border-radius:2px}
 
     /* ===== サービス一覧テーブル ===== */
@@ -141,7 +140,7 @@
 
     .badge-history{display:inline-block;font-size:10px;background:#fff8dc;border:1px solid #c8a000;color:#7a5c00;border-radius:2px;padding:1px 5px;margin-left:4px;vertical-align:middle;white-space:nowrap}
 
-.btn-detail{display:inline-block;background:var(--iw-blue);color:#fff;text-decoration:none;font-size:12px;padding:5px 12px;border-radius:3px;border:none;cursor:pointer;transition:background .15s;font-family:inherit}
+.btn-detail{display:inline-block;background:var(--iw-blue);color:#fff;text-decoration:none;font-size:12px;padding:5px 12px;border-radius:2px;border:none;cursor:pointer;transition:background .15s;font-family:inherit}
     .btn-detail:hover{background:var(--iw-navy)}
 
     /* ===== モーダル ===== */
@@ -196,20 +195,20 @@
     /* ===== ツールバー（検索・ソート） ===== */
     .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--iw-border);background:#fafbfd}
     .toolbar__group{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--iw-gray)}
-    .toolbar__input{font-family:inherit;font-size:13px;padding:5px 10px;border:1px solid #b0bcd8;border-radius:3px;min-width:180px;background:#fff;color:var(--iw-dark)}
+    .toolbar__input{font-family:inherit;font-size:13px;padding:5px 10px;border:1px solid #b0bcd8;border-radius:2px;min-width:180px;background:#fff;color:var(--iw-dark)}
     .toolbar__input:focus{outline:none;border-color:var(--iw-blue);box-shadow:0 0 0 2px rgba(0,85,204,.15)}
-    .toolbar__select{font-family:inherit;font-size:12px;padding:4px 8px;border:1px solid #b0bcd8;border-radius:3px;background:#fff;color:var(--iw-dark);cursor:pointer}
+    .toolbar__select{font-family:inherit;font-size:12px;padding:4px 8px;border:1px solid #b0bcd8;border-radius:2px;background:#fff;color:var(--iw-dark);cursor:pointer}
     .toolbar__count{margin-left:auto;font-size:11px;color:#888}
-    .toolbar__filter-btn{font-family:inherit;font-size:12px;padding:5px 12px;border:1px solid #b0bcd8;border-radius:3px;background:#fff;color:var(--iw-dark);cursor:pointer;white-space:nowrap}
+    .toolbar__filter-btn{font-family:inherit;font-size:12px;padding:5px 12px;border:1px solid #b0bcd8;border-radius:2px;background:#fff;color:var(--iw-dark);cursor:pointer;white-space:nowrap}
     .toolbar__filter-btn[data-tip]{position:relative}
-    .toolbar__filter-btn[data-tip]:hover::after{content:attr(data-tip);position:absolute;left:0;top:calc(100% + 6px);z-index:60;background:var(--iw-dark);color:#fff;font-size:11px;line-height:1.6;padding:7px 10px;border-radius:3px;width:max-content;max-width:280px;white-space:normal;text-align:left;box-shadow:0 2px 10px rgba(0,0,0,.3);pointer-events:none}
+    .toolbar__filter-btn[data-tip]:hover::after{content:attr(data-tip);position:absolute;left:0;top:calc(100% + 6px);z-index:60;background:var(--iw-dark);color:#fff;font-size:11px;line-height:1.6;padding:7px 10px;border-radius:2px;width:max-content;max-width:280px;white-space:normal;text-align:left;box-shadow:0 2px 10px rgba(0,0,0,.3);pointer-events:none}
     .toolbar__filter-btn:hover{border-color:var(--iw-blue);color:var(--iw-blue)}
     .toolbar__filter-btn.active{background:var(--iw-blue-light);border-color:var(--iw-blue);color:var(--iw-blue)}
     .toolbar__options{flex-basis:100%;display:flex;gap:14px;flex-wrap:wrap;padding:2px 0}
     .toolbar__options[hidden]{display:none}
 
     /* ===== 価格ミニグラフ（モーダル内） ===== */
-    .price-chart{margin:8px 0 14px;padding:8px 10px;background:#fafbfd;border:1px solid var(--iw-border);border-radius:3px}
+    .price-chart{margin:8px 0 14px;padding:8px 10px;background:#fafbfd;border:1px solid var(--iw-border);border-radius:2px}
     .price-chart__svg{width:100%;height:auto;display:block}
     .price-chart__line{fill:none;stroke:var(--iw-blue);stroke-width:2;stroke-linejoin:round}
     .price-chart__axis{stroke:var(--iw-border);stroke-width:1}
