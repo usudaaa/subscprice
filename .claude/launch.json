@@ -2,7 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "サブスクリプション価格ウォッチ (index.html)",
+      "name": "サブスク料金ナビ",
       "runtimeExecutable": "powershell",
       "runtimeArgs": [
         "-ExecutionPolicy", "Bypass",
@@ -11,17 +11,6 @@
       ],
       "cwd": "${workspaceFolder}",
       "port": 3000
-    },
-    {
-      "name": "編集ツール (edit.html)",
-      "runtimeExecutable": "powershell",
-      "runtimeArgs": [
-        "-ExecutionPolicy", "Bypass",
-        "-File", "serve.ps1",
-        "-Port", "3001"
-      ],
-      "cwd": "${workspaceFolder}",
-      "port": 3001
     }
   ]
 }
