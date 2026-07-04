@@ -387,7 +387,7 @@ function getCurrentPrice(plan){
 }
 
 function fmtAmount(p){
-  if(!p.amount) return '価格未確認';
+  if(!p.amount) return p.price_label || '価格未確認';
   if(p.currency==='JPY') return p.amount.toLocaleString()+'円';
   return p.amount+' USドル';
 }
