@@ -650,6 +650,9 @@ fetch('data/db.json')
   .then(db=>{
     DB = db;
     renderSidebar();
+    // #サービスid で直接そのサービスの編集を開く
+    const hid = decodeURIComponent(location.hash.slice(1));
+    if(hid && DB.services.some(s=>s.id===hid)) selectService(hid);
   })
   .catch(err=>{
     document.getElementById('sidebarList').innerHTML =
