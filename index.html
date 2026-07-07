@@ -191,6 +191,10 @@
     .badge-current{display:inline-block;background:var(--iw-navy);color:#fff;font-size:10px;border-radius:2px;padding:1px 5px;margin-left:5px;font-weight:normal;vertical-align:middle}
     .badge-up{display:inline-block;background:#fde8e8;border:1px solid #c44;color:#900;font-size:10px;border-radius:2px;padding:1px 5px;margin-left:4px;font-weight:normal;vertical-align:middle}
     .badge-down{display:inline-block;background:#e8fde8;border:1px solid #4a4;color:#060;font-size:10px;border-radius:2px;padding:1px 5px;margin-left:4px;font-weight:normal;vertical-align:middle}
+    .badge-ended{display:inline-block;font-size:10px;background:#ececec;border:1px solid #999;color:#555;border-radius:2px;padding:1px 5px;margin-left:4px;font-weight:normal;vertical-align:middle;white-space:nowrap}
+    .badge-closed{display:inline-block;font-size:10px;background:#fff8dc;border:1px solid #c8a000;color:#7a5c00;border-radius:2px;padding:1px 5px;font-weight:normal;vertical-align:middle;white-space:nowrap}
+    tr.svc-ended td{background:#fafafa}
+    tr.svc-ended .service-name,tr.svc-ended .price-amount,tr.svc-ended .price-label{color:#999}
     .source-link{font-size:11px;color:#aaa}
     .source-link a{color:var(--iw-link);text-decoration:none}
     .source-link a:hover{text-decoration:underline}
@@ -398,6 +402,13 @@ function getCurrentPrice(plan){
   return active.reduce((a,b)=>a.valid_from>=b.valid_from?a:b);
 }
 
+// 提供終了プラン用：最後に有効だった価格（表示用）
+function getLastPrice(plan){
+  return [...plan.price_history]
+    .filter(h=>h.amount>0 || h.price_label)
+    .sort((a,b)=>String(b.valid_from||'').localeCompare(String(a.valid_from||'')))[0] || null;
+}
+
 function fmtAmount(p){
   if(!p.amount) return p.price_label || '価格未確認';
   if(p.currency==='JPY') return p.amount.toLocaleString()+'円';
@@ -580,7 +591,8 @@ function filterServices(){
   if(state.search){
     services = services.filter(s=>
       s.name.toLowerCase().includes(state.search) ||
-      s.provider.toLowerCase().includes(state.search)
+      s.provider.toLowerCase().includes(state.search) ||
+      (s.description||'').toLowerCase().includes(state.search)
     );
   }
   if(state.historyFilter === 'history') services = services.filter(svcHasHistory);
@@ -654,15 +666,17 @@ function buildTable(services, showCat){
     const tr=document.createElement('tr');
     const bigLabel=(svc.categories||[]).some(c=>c==='ai'||c==='cloud-storage');
     const priceHtml=svc.plans.map(plan=>{
-      const cur=getCurrentPrice(plan);
+      const planEnded = !!(svc.ended || plan.ended);
+      const cur = getCurrentPrice(plan) || (planEnded ? getLastPrice(plan) : null);
       if(!cur)return '';
       const isUSD=cur.currency==='USD';
       const taxNote=fmtTax(cur);
-      const annualHtml = fmtMonthlyEquiv(cur);
-      const checkbox = cur.amount>0 ? `<input type="checkbox" class="sim-check" data-pid="${plan.id}" ${sim.selected.has(plan.id)?'checked':''} aria-label="${escapeHtml(svc.name)} ${escapeHtml(plan.name)}を合計に追加">` : '';
+      const annualHtml = planEnded ? '' : fmtMonthlyEquiv(cur);
+      const checkbox = (cur.amount>0 && !planEnded) ? `<input type="checkbox" class="sim-check" data-pid="${plan.id}" ${sim.selected.has(plan.id)?'checked':''} aria-label="${escapeHtml(svc.name)} ${escapeHtml(plan.name)}を合計に追加">` : '';
+      const planBadge = plan.ended && !svc.ended ? '<span class="badge-ended">提供終了</span>' : (plan.closed && !planEnded ? '<span class="badge-closed">新規受付終了</span>' : '');
       return `<div class="price-row">
         ${checkbox}
-        <span class="price-label${bigLabel?' large':''}">${escapeHtml(plan.name)}</span>
+        <span class="price-label${bigLabel?' large':''}">${escapeHtml(plan.name)}</span>${planBadge}
         <span class="${cur.amount?`price-amount${isUSD?' usd':''}`:'price-unit'}">${fmtAmount(cur)}</span>
         ${taxNote?`<span class="price-unit">${taxNote}</span>`:''}
         ${cur.amount?`<span class="price-unit">${fmtBilling(cur.billing)}</span>`:''}
@@ -672,7 +686,10 @@ function buildTable(services, showCat){
 
     const catLabel = showCat ? `<div class="service-provider">${escapeHtml((svc.categories||[]).map(id=>categoryMap[id]).filter(Boolean).join(' / '))}</div>` : '';
     const chg = recentChange(svc);
-    const chgBadges = (chg.up?'<span class="badge-up">値上げ</span>':'') + (chg.down?'<span class="badge-down">値下げ</span>':'');
+    const chgBadges = svc.ended
+      ? '<span class="badge-ended">提供終了</span>'
+      : (chg.up?'<span class="badge-up">値上げ</span>':'') + (chg.down?'<span class="badge-down">値下げ</span>':'');
+    if(svc.ended) tr.className = 'svc-ended';
     tr.innerHTML=`
       <td><div class="service-name" data-id="${svc.id}" title="${escapeHtml(svc.name)}の詳細と価格推移を見る">${escapeHtml(svc.name)}${chgBadges}</div><div class="service-provider">${escapeHtml(svc.provider)}</div>${catLabel}</td>
       <td>${priceHtml}</td>
@@ -793,7 +810,7 @@ function openModal(id, fromHistory){
     const chart = buildPriceChart(plan);
     const annualNote = fmtAnnualNote(getCurrentPrice(plan));
     plansHtml+=`<div class="plan-block">
-      <div class="plan-name">${escapeHtml(nameDesc)}</div>
+      <div class="plan-name">${escapeHtml(nameDesc)}${(plan.ended||svc.ended)?' <span class="badge-ended">提供終了</span>':(plan.closed?' <span class="badge-closed">新規受付終了</span>':'')}</div>
       ${annualNote?`<div class="plan-annual">${annualNote}</div>`:''}
       ${chart}
       <table class="history-table">
@@ -810,7 +827,7 @@ function openModal(id, fromHistory){
   document.getElementById('modalContent').innerHTML=`
     <div class="modal-header">
       <div>
-        <div class="modal-header__title">${escapeHtml(svc.name)}</div>
+        <div class="modal-header__title">${escapeHtml(svc.name)}${svc.ended?' <span class="badge-ended">提供終了</span>':''}</div>
         <div class="modal-header__sub">${escapeHtml(svc.provider)} &mdash; ${escapeHtml((svc.categories||[]).map(id=>categoryMap[id]).filter(Boolean).join(' / '))}</div>
       </div>
       <button class="modal-close" id="modalCloseBtn" aria-label="閉じる">&times;</button>
@@ -898,7 +915,7 @@ function simTotals(){
   let mJPY=0, yJPY=0, mUSD=0, yUSD=0, count=0;
   sim.selected.forEach(pid=>{
     const info = simPlanMap[pid];
-    if(!info) return;
+    if(!info || info.svc.ended || info.plan.ended) return;
     const cur = getCurrentPrice(info.plan);
     if(!cur || !cur.amount) return;
     count++;
@@ -1012,7 +1029,13 @@ function buildNews(){
           items.push({date:e.valid_from, svc, plan, type:'changed', prev, cur:e});
         }
       });
+      if(plan.ended && plan.ended >= cutoffStr && !svc.ended){
+        items.push({date:plan.ended, svc, plan, type:'plan-ended'});
+      }
     });
+    if(svc.ended && svc.ended >= cutoffStr){
+      items.push({date:svc.ended, svc, plan:null, type:'svc-ended'});
+    }
   });
 
   items.sort((a,b)=>b.date.localeCompare(a.date));
@@ -1023,13 +1046,18 @@ function buildNews(){
   const fmtD = s=>{ const d=new Date(s); return d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate(); };
 
   const rows = top.map(it=>{
-    const badge = it.type==='up'   ? '<span class="badge-up">値上げ</span>'
+    const badge = it.type==='svc-ended'||it.type==='plan-ended' ? '<span class="badge-ended">終了</span>'
+                : it.type==='up'   ? '<span class="badge-up">値上げ</span>'
                 : it.type==='down' ? '<span class="badge-down">値下げ</span>'
                 : it.type==='new'  ? '<span class="badge-new">新プラン</span>'
                 :                    '<span class="badge-new">改定</span>';
-    const label = `<a class="news-link" data-id="${it.svc.id}">${escapeHtml(it.svc.name)}</a> ${escapeHtml(it.plan.name)}`;
+    const label = `<a class="news-link" data-id="${it.svc.id}">${escapeHtml(it.svc.name)}</a>${it.plan?' '+escapeHtml(it.plan.name):''}`;
     let text;
-    if(it.type==='new'){
+    if(it.type==='svc-ended'){
+      text = `<a class="news-link" data-id="${it.svc.id}">${escapeHtml(it.svc.name)}</a> がサービス終了`;
+    } else if(it.type==='plan-ended'){
+      text = `${label} が提供終了`;
+    } else if(it.type==='new'){
       text = `${label} が登場 — ${fmtA(it.cur.amount,it.cur.currency)}${fmtBilling(it.cur.billing)}`;
     } else if(it.type==='changed'){
       text = `${label} — ${fmtA(it.cur.amount,it.cur.currency)}${fmtBilling(it.cur.billing)}に${it.cur.note?`（${escapeHtml(it.cur.note)}）`:''}`;

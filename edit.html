@@ -282,6 +282,13 @@ function renderEditor(svc) {
             <div class="field-note">リンクテキストとURLの両方を入力すると、公開ページの概要下部に加入ボタンが表示されます（PR表記は自動付与）</div>
           </div>
         </div>
+        <div class="field-row">
+          <div class="field">
+            <label>サービス終了日（任意）</label>
+            <input type="date" id="f_ended" value="${esc(svc.ended||'')}">
+            <div class="field-note">入力すると一覧でグレー表示＋「提供終了」バッジになり、合計シミュレーターの対象外になります（データは残ります）</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -312,6 +319,15 @@ function renderPlan(plan, pi, total) {
         <div class="field-row">
           <div class="field"><label>プラン名</label><input id="p_${pi}_name" value="${esc(plan.name)}"></div>
           <div class="field"><label>プラン説明（任意）</label><input id="p_${pi}_desc" value="${esc(plan.description)}"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>提供終了日（任意）</label><input type="date" id="p_${pi}_ended" value="${plan.ended||''}"></div>
+          <div class="field"><label>新規受付</label>
+            <select id="p_${pi}_closed">
+              <option value="" ${!plan.closed?'selected':''}>受付中</option>
+              <option value="1" ${plan.closed?'selected':''}>新規受付終了</option>
+            </select>
+          </div>
         </div>
         <div style="font-size:12px;font-weight:bold;color:var(--navy);margin-bottom:8px">価格履歴</div>
         <div id="history_${pi}">${historyHtml}</div>
@@ -392,10 +408,15 @@ function saveService() {
   svc.affiliate_text = document.getElementById('f_aff_text').value.trim();
   svc.affiliate_url  = document.getElementById('f_aff_url').value.trim();
   svc.description = document.getElementById('f_description').value;
+  const endedVal = document.getElementById('f_ended').value;
+  if (endedVal) svc.ended = endedVal; else delete svc.ended;
 
   svc.plans.forEach((plan, pi) => {
     plan.name        = document.getElementById(`p_${pi}_name`).value;
     plan.description = document.getElementById(`p_${pi}_desc`).value;
+    const pEnded = document.getElementById(`p_${pi}_ended`).value;
+    if (pEnded) plan.ended = pEnded; else delete plan.ended;
+    if (document.getElementById(`p_${pi}_closed`).value) plan.closed = true; else delete plan.closed;
 
     plan.price_history.forEach((h, hi) => {
       h.amount      = Number(document.getElementById(`h_${pi}_${hi}_amount`).value);
