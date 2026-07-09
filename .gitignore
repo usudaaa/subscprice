@@ -10,3 +10,6 @@ export.json
 
 # Codexフォルダ（開発資料 — 公開不要な場合はコメントアウト解除）
 # Codex/
+
+# 配布用スナップショット（生成物）
+subscprice_snapshot.html
