@@ -28,6 +28,8 @@
   出典: https://music.line.me/top/plan/
 - [ ] **LINE MUSIC / 学割** — 480円（LINE STORE経由。アプリ内課金は580円）
   出典: https://music.line.me/top/plan/
+- [ ] **Apple Music / 学生** — 680円（2026年7月18日の値上げ後価格で掲載開始。旧580円の適用開始日・それ以前の履歴が未収録）
+  出典: https://www.watch.impress.co.jp/docs/news/2126292.html
 
 ## 動画配信
 
