@@ -11,6 +11,9 @@
 
 ## AI
 
+- [ ] **ChatGPT / Go** — 1,400円（2026年7月時点の公式価格。展開開始時のImpress報道は1,500円で、変更時期を特定できる出典が未発見。改定日が判明したら履歴を2件に分割する）
+  出典: https://chatgpt.com/ja-JP/pricing/
+
 - [ ] **Gemini / Google AI Pro** — 2,900円（valid_from: 2025-05-01は仮置き）
   出典: https://www.watch.impress.co.jp/docs/news/2115528.html
 - [ ] **Gemini / Google AI Ultra** — 14,500円（valid_from: 2025-05-01は仮置き）
