@@ -1039,7 +1039,24 @@ function buildNews(){
   });
 
   items.sort((a,b)=>b.date.localeCompare(a.date));
-  const top = items.slice(0,8);
+
+  // 同一サービス・同日・同種別の複数プラン改定は1行にまとめる
+  // （一斉値上げが件数上限を占拠して他のニュースを押し出さないように）
+  const grouped = [];
+  const groupMap = new Map();
+  for(const it of items){
+    if(['up','down','new','changed'].includes(it.type)){
+      const key = it.svc.id + '|' + it.date + '|' + it.type;
+      if(groupMap.has(key)){ groupMap.get(key).group.push(it); continue; }
+      const g = Object.assign({}, it, {group:[it]});
+      groupMap.set(key, g);
+      grouped.push(g);
+    } else {
+      grouped.push(it);
+    }
+  }
+
+  const top = grouped.slice(0,8);
   if(!top.length) return;  // ニュースがなければ枠ごと非表示のまま
 
   const fmtA = (a,c)=> c==='USD' ? a.toLocaleString()+' USドル' : a.toLocaleString()+'円';
@@ -1052,8 +1069,16 @@ function buildNews(){
                 : it.type==='new'  ? '<span class="badge-new">新プラン</span>'
                 :                    '<span class="badge-new">改定</span>';
     const label = `<a class="news-link" data-id="${it.svc.id}">${escapeHtml(it.svc.name)}</a>${it.plan?' '+escapeHtml(it.plan.name):''}`;
+    const svcLink = `<a class="news-link" data-id="${it.svc.id}">${escapeHtml(it.svc.name)}</a>`;
     let text;
-    if(it.type==='svc-ended'){
+    if(it.group && it.group.length > 1){
+      // 複数プラン同時改定のまとめ行
+      const n = it.group.length;
+      text = it.type==='up'     ? `${svcLink} — ${n}プランで値上げ`
+           : it.type==='down'   ? `${svcLink} — ${n}プランで値下げ`
+           : it.type==='new'    ? `${svcLink} — 新プラン${n}件が登場`
+           :                      `${svcLink} — ${n}プランで改定`;
+    } else if(it.type==='svc-ended'){
       text = `<a class="news-link" data-id="${it.svc.id}">${escapeHtml(it.svc.name)}</a> がサービス終了`;
     } else if(it.type==='plan-ended'){
       text = `${label} が提供終了`;
