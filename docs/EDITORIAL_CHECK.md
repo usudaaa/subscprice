@@ -52,6 +52,8 @@
   出典: https://www.notion.com/ja/pricing
 - [ ] **Notion / Business** — 3,150円（同上）
   出典: https://www.notion.com/ja/pricing
+- [ ] **Google Workspace / Business Plus** — 2,500円（2026年9月に新設を確認したが発表日・提供開始日が未確認。5TBストレージの記載も公式ページの目視確認に基づく簡易記載）
+  出典: https://workspace.google.com/pricing?hl=ja
 
 ---
 
