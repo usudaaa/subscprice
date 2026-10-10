@@ -89,7 +89,7 @@ data/db.json（データの正本・1行の圧縮JSON）
 | 機能 | 実装 | 仕様 |
 |---|---|---|
 | 現在価格 | `getCurrentPrice()` | `valid_to===null`のうち`valid_from`最新（閉じ忘れに耐性） |
-| 値上げ/値下げバッジ | `recentChange()` | 直近**12カ月**、同一通貨・同一billing間の比較のみ |
+| 値上げ/値下げバッジ | `recentChange()` | 直近**6カ月**（ニュース欄と同期間）、同一通貨・同一billing間の比較のみ |
 | 改定ニュース欄 | `buildNews()` | 直近**6カ月**・最大8件。改定/新プラン/通貨変更/終了を自動分類。「編集部確認」除外。既読管理は`localStorage: spw_news_seen` |
 | 価格推移グラフ | `buildPriceChart()` | 階段状SVG。現在通貨と同じエントリのみ描画（ドル建て→円建て移行は対象外） |
 | 合計シミュレーター | `sim*` 一式 | モード式。選択は`localStorage: spw_sim`。ended系は対象外。年払いは月額換算合算、USDは別建て表示 |

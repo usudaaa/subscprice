@@ -476,10 +476,10 @@ function svcHasHistory(svc){
   return svc.plans.some(p=>hasHistoryEntry(p));
 }
 
-// 直近12カ月以内の価格改定を検出（一覧バッジ用）
+// 直近6カ月以内の価格改定を検出（一覧バッジ用。改定ニュース欄の掲載期間と揃える）
 function recentChange(svc){
   const cutoff = new Date();
-  cutoff.setFullYear(cutoff.getFullYear()-1);
+  cutoff.setMonth(cutoff.getMonth()-6);
   const cutoffStr = cutoff.toISOString().slice(0,10);
   let up=false, down=false;
   svc.plans.forEach(plan=>{
