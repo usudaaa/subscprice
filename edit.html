@@ -68,6 +68,9 @@
     .field textarea{resize:vertical;min-height:72px;line-height:1.6}
     .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(0,85,204,.15)}
     .field-note{font-size:11px;color:#999;margin-top:2px}
+    .cat-checks{display:flex;flex-wrap:wrap;gap:6px 18px;padding:4px 0}
+    .cat-checks label{font-size:13px;font-weight:normal;color:#1a1a1a;display:flex;align-items:center;gap:4px;cursor:pointer}
+    .cat-checks input{width:auto;padding:0;margin:0}
 
     /* 価格履歴エントリ */
     .price-entry{background:#f8faff;border:1px solid var(--border);border-radius:3px;padding:12px;margin-bottom:10px;position:relative}
@@ -243,8 +246,8 @@ function selectService(id) {
 function renderEditor(svc) {
   const editor = document.getElementById('editor');
 
-  const catOptions = DB.categories.map(c =>
-    `<option value="${c.id}" ${(svc.categories||[])[0] === c.id ? 'selected' : ''}>${c.name}</option>`
+  const catChecks = DB.categories.map(c =>
+    `<label><input type="checkbox" name="f_cat" value="${c.id}" ${(svc.categories||[]).includes(c.id) ? 'checked' : ''}> ${c.name}</label>`
   ).join('');
 
   let plansHtml = svc.plans.map((plan, pi) => renderPlan(plan, pi, svc.plans.length)).join('');
@@ -263,11 +266,15 @@ function renderEditor(svc) {
           <div class="field"><label>サービス名</label><input id="f_name" value="${esc(svc.name)}"></div>
           <div class="field"><label>提供会社</label><input id="f_provider" value="${esc(svc.provider)}"></div>
         </div>
-        <div class="field-row">
-          <div class="field"><label>カテゴリ</label><select id="f_category">${catOptions}</select></div>
-          <div class="field"><label>公式URL</label><input id="f_url" value="${esc(svc.url)}"></div>
+        <div class="field-row full">
+          <div class="field">
+            <label>カテゴリ（複数選択可）</label>
+            <div class="cat-checks">${catChecks}</div>
+            <div class="field-note">複数選ぶと公開ページの各カテゴリにそれぞれ表示されます（例: X SubscriptionはAIと会員サービス）</div>
+          </div>
         </div>
         <div class="field-row">
+          <div class="field"><label>公式URL</label><input id="f_url" value="${esc(svc.url)}"></div>
           <div class="field"><label>URLラベル（リンクテキスト）</label><input id="f_url_label" value="${esc(svc.url_label)}"></div>
         </div>
         <div class="field-row full">
@@ -402,8 +409,12 @@ function saveService() {
   const svc = DB.services.find(s => s.id === currentServiceId);
   svc.name     = document.getElementById('f_name').value;
   svc.provider = document.getElementById('f_provider').value;
-  const catVal = document.getElementById('f_category').value;
-  svc.categories = catVal ? [catVal] : (svc.categories||[]);
+  // 既存の並び順（先頭＝主カテゴリ）を保ち、新たにチェックされたものを末尾に追加。全解除時は変更しない
+  const checkedCats = Array.from(document.querySelectorAll('input[name="f_cat"]:checked')).map(x => x.value);
+  if (checkedCats.length) {
+    const kept = (svc.categories||[]).filter(c => checkedCats.includes(c));
+    svc.categories = kept.concat(checkedCats.filter(c => !kept.includes(c)));
+  }
   svc.url      = document.getElementById('f_url').value;
   svc.url_label= document.getElementById('f_url_label').value;
   svc.affiliate_text = document.getElementById('f_aff_text').value.trim();
@@ -577,7 +588,7 @@ function addNewService() {
   const catId = DB.categories[0].id;
   const id = name.toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + Date.now();
   const newSvc = {
-    id, name, provider: '', category: catId,
+    id, name, provider: '', categories: [catId],
     url: '', url_label: name + '詳細ページ', description: '',
     plans: [{
       id: id + '-plan1', name: '月額プラン', description: '',

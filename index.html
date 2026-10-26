@@ -971,6 +971,8 @@ document.getElementById('serviceList').addEventListener('change', e=>{
   if(!cb) return;
   if(cb.checked) sim.selected.add(cb.dataset.pid);
   else sim.selected.delete(cb.dataset.pid);
+  // 複数カテゴリのサービスは同じプランが一覧に複数回出るため、チェック表示を揃える
+  document.querySelectorAll('.sim-check').forEach(x => { if(x.dataset.pid === cb.dataset.pid) x.checked = cb.checked; });
   updateSimBar();
 });
 
