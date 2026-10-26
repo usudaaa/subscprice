@@ -25,6 +25,13 @@
 - [ ] **Genspark / Pro** — 249.99 USドル
   出典: https://www.watch.impress.co.jp/docs/news/2081534.html
 
+## 会員サービス
+
+- [ ] **X Subscription / Plus・Premium・Super・Ultra** — 8/30/100/200 USドル（税別）で収録。Impress・窓の杜の記事はドル表記のみ。**日本向けの円建て価格**（他媒体ではWeb版でPlus 1,280円・Premium 5,280円・Super 17,800円・Ultra 34,800円、アプリ版はさらに高額との報道あり）が公式またはImpress系で確認できたら円建てに切り替える
+  出典: https://www.watch.impress.co.jp/docs/news/2147626.html
+- [ ] **X Subscription / 提供元表記** — 現在「SpaceXAI」。マスク氏が「SpaceXSI」への改名意向を表明済み（2026年10月4日、正式変更は未確認）。正式に変わったら提供元を更新
+  出典: https://www.watch.impress.co.jp/docs/news/2145787.html
+
 ## 音楽配信
 
 - [ ] **LINE MUSIC / スタンダード** — 980円（年額9,800円。過去の改定履歴未収録。公式プランページはJS描画のため目視確認が必要）
